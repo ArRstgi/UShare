@@ -18,7 +18,7 @@ Team Member List:
 - Teerat Chanromyen
   - Role Name:
   - Issues to work on:
-      - UI DESIGN:
+      - UI DESIGN: Matching System UI
       - DATA DESIGN:
       - TEAM DESIGN: 
 - Arush Rastogi
