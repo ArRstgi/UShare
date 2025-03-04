@@ -1,4 +1,4 @@
-# Community Skill-Sharing Platform (Group 17) 
+# UShare: A Community Skill-Sharing Platform (Group 17) 
 
 Project Description
 - Problem: Learning new skills is hard and it’s even harder to try and self-motivate yourself with online learning. It can be lonely and expensive.
