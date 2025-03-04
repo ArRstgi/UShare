@@ -11,17 +11,12 @@ Project Description
 Team Member List:
 - Michael Ye
   - Role Name: Project Manager
-  - Role Description: Oversee the project lifecycle, work on the planning, coordinate with all the members to check in and ensure unity, and look at the project from a high-level. 
-  - Issues to work on:
 - Teerat Chanromyen
   - Role Name:
-  - Role Description:
   - Issues to work on:
 - Arush Rastogi
   - Role Name:
-  - Role Description:
   - Issues to work on:
 - Trey Robbio
   - Role Name:
-  - Role Description:
   - Issues to work on:
