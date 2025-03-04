@@ -19,7 +19,7 @@ Team Member List:
   - Role Name:
   - Issues to work on:
       - UI DESIGN: Matching System UI
-      - DATA DESIGN:
+      - DATA DESIGN: Match Data Structure
       - TEAM DESIGN: 
 - Arush Rastogi
   - Role Name:
