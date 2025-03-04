@@ -11,6 +11,7 @@ Project Description
 Team Member List:
 - Michael Ye
   - Role Name: Project Manager
+  - Issues to work on:
 - Teerat Chanromyen
   - Role Name:
   - Issues to work on:
