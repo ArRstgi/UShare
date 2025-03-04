@@ -12,12 +12,24 @@ Team Member List:
 - Michael Ye
   - Role Name: Project Manager
   - Issues to work on:
+      - UI DESIGN: User Profile Screen
+      - DATA DESIGN: User Data Structure
+      - TEAM DESIGN: Role: Project Manager
 - Teerat Chanromyen
   - Role Name:
   - Issues to work on:
+      - UI DESIGN:
+      - DATA DESIGN:
+      - TEAM DESIGN: 
 - Arush Rastogi
   - Role Name:
   - Issues to work on:
+      - UI DESIGN:
+      - DATA DESIGN:
+      - TEAM DESIGN: 
 - Trey Robbio
   - Role Name:
   - Issues to work on:
+      - UI DESIGN:
+      - DATA DESIGN:
+      - TEAM DESIGN: 
