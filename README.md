@@ -28,8 +28,8 @@ Team Member List:
       - DATA DESIGN:
       - TEAM DESIGN: 
 - Trey Robbio
-  - Role Name:
+  - Role Name: Timekeeper
   - Issues to work on:
-      - UI DESIGN:
-      - DATA DESIGN:
-      - TEAM DESIGN: 
+      - UI DESIGN: Rating & Review UI
+      - DATA DESIGN: Review & Rating Data Structure
+      - TEAM DESIGN: Role: Timekeeper
