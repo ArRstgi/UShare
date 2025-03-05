@@ -32,4 +32,4 @@ Team Member List:
   - Issues to work on:
       - UI DESIGN: Rating & Review UI
       - DATA DESIGN: Review & Rating Data Structure
-      - TEAM DESIGN: 
+      - TEAM DESIGN: Timekeeper
