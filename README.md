@@ -20,7 +20,7 @@ Team Member List:
   - Issues to work on:
       - UI DESIGN: Matching System UI
       - DATA DESIGN: Match Data Structure
-      - TEAM DESIGN: 
+      - TEAM DESIGN: Meeting Coordinator
 - Arush Rastogi
   - Role Name:
   - Issues to work on:
