@@ -25,7 +25,7 @@ Team Member List:
   - Role Name: Note-Taker
   - Issues to work on:
       - UI DESIGN:
-      - DATA DESIGN:
+      - DATA DESIGN: Chat Message Data Structure
       - TEAM DESIGN: Note-Taker
 - Trey Robbio
   - Role Name: Timekeeper
