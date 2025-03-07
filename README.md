@@ -22,11 +22,11 @@ Team Member List:
       - DATA DESIGN: Match Data Structure
       - TEAM DESIGN: Meeting Coordinator
 - Arush Rastogi
-  - Role Name:
+  - Role Name: Note-Taker
   - Issues to work on:
       - UI DESIGN:
       - DATA DESIGN:
-      - TEAM DESIGN: 
+      - TEAM DESIGN: Note-Taker
 - Trey Robbio
   - Role Name: Timekeeper
   - Issues to work on:
