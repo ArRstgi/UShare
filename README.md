@@ -14,7 +14,7 @@ Team Member List:
   - Issues to work on:
       - UI DESIGN: User Profile Screen
       - DATA DESIGN: User Data Structure
-      - TEAM DESIGN: Role: Project Manager
+      - TEAM DESIGN: Project Manager
 - Teerat Chanromyen
   - Role Name:
   - Issues to work on:
