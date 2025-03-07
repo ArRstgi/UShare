@@ -24,7 +24,7 @@ Team Member List:
 - Arush Rastogi
   - Role Name: Note-Taker
   - Issues to work on:
-      - UI DESIGN:
+      - UI DESIGN: Chat & Scheduling UI
       - DATA DESIGN: Chat Message Data Structure
       - TEAM DESIGN: Note-Taker
 - Trey Robbio
