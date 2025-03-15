@@ -16,7 +16,7 @@ Team Member List:
       - DATA DESIGN: User Data Structure
       - TEAM DESIGN: Project Manager
 - Teerat Chanromyen
-  - Role Name:
+  - Role Name: Meeting Coordinator
   - Issues to work on:
       - UI DESIGN: Matching System UI
       - DATA DESIGN: Match Data Structure
