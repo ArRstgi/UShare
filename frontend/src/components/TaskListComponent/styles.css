@@ -1,0 +1,48 @@
+/* Task List Container */
+.task-list {
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
+.task-list h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+/* Clear Tasks Button */
+#clearTasksBtn {
+  margin-top: 15px;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Responsive Design for Task List */
+
+/* Tablet Adjustments for Task List */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .task-list {
+    padding: 20px;
+  }
+
+  #clearTasksBtn {
+    max-width: 400px;
+  }
+}
+
+/* Desktop Adjustments for Task List */
+@media (min-width: 1025px) {
+  .task-list {
+    max-width: 900px;
+  }
+
+  #clearTasksBtn {
+    max-width: 350px;
+  }
+}
