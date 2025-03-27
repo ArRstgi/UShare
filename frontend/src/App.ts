@@ -19,7 +19,7 @@ export default class App {
     this.#pageComponents = {
       home: new TaskListPage(),
       login: new LoginPage(),
-      profile: new UserProfilePage() // Add UserProfilePage
+      profile: new UserProfilePage()
     };
   }
 
@@ -68,7 +68,7 @@ export default class App {
       case "/login":
         this.#currentPage = "login";
         break;
-      case "/profile": // Handle the profile route
+      case "/profile":
         this.#currentPage = "profile";
         break;
       default:

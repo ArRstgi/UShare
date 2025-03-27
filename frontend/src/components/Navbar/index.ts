@@ -20,7 +20,8 @@ export class Navbar extends BaseComponent {
     container.innerHTML = `
       <a href="/home" id="home">Home</a>
       <a href="/chat" id="chat">Chat</a>
-      <a href="/profile" id="profile">Profile</a> 
+      <a href="/profile" id="profile">Profile</a>
+      <a href="/login" id="login">Login</a>
     `;
 
     // Get all the anchor tags within the <div> element
