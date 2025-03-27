@@ -1,0 +1,122 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #fff;
+    color: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+  }
+  
+  .login-container {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .logo {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border: 1px solid #ddd;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .login-form h2 {
+    margin-bottom: 12px;
+    font-size: 24px;
+    text-align: center;
+  }
+  
+  .login-form label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .login-form input {
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .login-form button {
+    padding: 12px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  
+  .login-form button:hover {
+    background-color: #333;
+  }
+  
+  .signup-link {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    margin-top: 12px;
+  }
+  
+  .signup-link a {
+    color: black;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  @media (max-width: 500px) {
+    .login-container {
+      max-width: 100%;
+      padding: 0 16px;
+    }
+  
+    .login-form {
+      padding: 24px;
+      border-radius: 10px;
+    }
+  
+    .logo {
+      font-size: 28px;
+      margin-bottom: 30px;
+    }
+  
+    .login-form h2 {
+      font-size: 20px;
+    }
+  
+    .login-form input {
+      font-size: 15px;
+      padding: 8px 10px;
+    }
+  
+    .login-form button {
+      font-size: 15px;
+      padding: 10px;
+    }
+  
+    .signup-link {
+      font-size: 13px;
+    }
+  }
+  
