@@ -17,3 +17,15 @@ ul, li {
   margin-top: 30vh;
   text-align: center;
 }
+
+/*  I added this to make sure that my pages can stretch out since they were skinny before */
+#page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* allow child elements to stretch */
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%; /* ensure it takes up the full height of the screen */
+  padding: 0; /* remove padding to avoid unnecessary spacing */
+  box-sizing: border-box;
+}

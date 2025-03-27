@@ -19,9 +19,8 @@ export class Navbar extends BaseComponent {
     // Populate the <div> element with the navigation links
     container.innerHTML = `
       <a href="/home" id="home">Home</a>
-      <ul id="menu">
-        <li><a href="/login" id="login">Login</a></li>
-      </ul>
+      <a href="/chat" id="chat">Chat</a>
+      <a href="/profile" id="profile">Profile</a> 
     `;
 
     // Get all the anchor tags within the <div> element

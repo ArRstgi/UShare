@@ -3,6 +3,8 @@ import { LoginPage } from "@/pages/Login";
 import { BaseComponent } from "@/components/BaseComponent";
 import { Navbar } from "@/components/Navbar";
 import { Events, EventHub } from "@/lib/eventhub";
+import { UserProfilePage } from "@/pages/UserProfile";
+
 
 export default class App {
   #container: HTMLElement | null = null; // Private container for the component
@@ -17,6 +19,7 @@ export default class App {
     this.#pageComponents = {
       home: new TaskListPage(),
       login: new LoginPage(),
+      profile: new UserProfilePage() // Add UserProfilePage
     };
   }
 
@@ -64,6 +67,9 @@ export default class App {
         break;
       case "/login":
         this.#currentPage = "login";
+        break;
+      case "/profile": // Handle the profile route
+        this.#currentPage = "profile";
         break;
       default:
         this.#currentPage = "404";
