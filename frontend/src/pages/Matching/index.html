@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UShare</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">UShare</div>
+        <div class="nav-links">
+            <div>Home</div>
+            <div>Profile</div>
+            <div>Messages</div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input type="text" class="search-bar" placeholder="Search...">
+    </div>
+
+    <!-- Wrapper to center the card container -->
+    <div class="container-wrapper">
+        <div class="card-container">
+            <script>
+                for (let i = 0; i < 14; i++) {
+                    document.write(`
+                        <div class="card">
+                            <div style="display: flex; align-items: center;">
+                                <div class="profile-pic"></div>
+                                <h4>username</h4>
+                            </div>
+                            <img src="swimmer.jpg" alt="User Activity">
+                            <div class="description">This is a sample description that may get cut off if it is too long. This is a sample description that may get cut off if it is too long. This is a sample description that may get cut off if it is too long.</div>
+                            <div class="buttons">
+                                <button class="match-btn">Match</button>
+                                <button class="more-btn">More</button>
+                            </div>
+                        </div>
+                    `);
+                }
+            </script>
+        </div>
+    </div>
+</body>
+</html>
