@@ -11,21 +11,28 @@ export class Navbar extends BaseComponent {
   }
 
   render() {
-    // Create a <div> element to hold the navigation bar
-    const container = document.createElement("nav");
-    container.id = "navbar";
-    container.classList.add("navbar");
+    // Create a <nav> element to hold the navigation bar
+    const nav = document.createElement("nav");
+    nav.id = "navbar";
+    nav.classList.add("navbar");
 
-    // Populate the <div> element with the navigation links
-    container.innerHTML = `
+    // Create a <span> element for the "UShare" text
+    const ushare = document.createElement("span");
+    ushare.textContent = "UShare";
+    ushare.classList.add("ushare");
+
+    // Create a <div> element to hold the navigation links
+    const linksContainer = document.createElement("div");
+    linksContainer.classList.add("nav-links");
+    linksContainer.innerHTML = `
       <a href="/home" id="home">Home</a>
       <a href="/chat" id="chat">Chat</a>
       <a href="/profile" id="profile">Profile</a>
       <a href="/login" id="login">Login</a>
     `;
 
-    // Get all the anchor tags within the <div> element
-    const links = container.querySelectorAll("a");
+    // Get all the anchor tags within the links container
+    const links = linksContainer.querySelectorAll("a");
 
     // Add event listeners to each anchor tag
     links.forEach((link) => {
@@ -50,7 +57,11 @@ export class Navbar extends BaseComponent {
       });
     });
 
+    // Append "UShare" and the links container to the navigation bar
+    nav.appendChild(ushare);
+    nav.appendChild(linksContainer);
+
     // Return the populated navigation bar element
-    return container;
+    return nav;
   }
 }
