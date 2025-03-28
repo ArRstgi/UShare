@@ -1,46 +1,44 @@
-* {
+.matching-page * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
 }
 
-.navbar {
+.matching-page .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
     width: 100%;
-    max-width: 1200px;
 }
 
-.nav-links {
+.matching-page .nav-links {
     display: flex;
     gap: 20px;
 }
 
-.search-container {
+.matching-page .search-container {
     text-align: center;
     margin: 20px 0;
     width: 100%;
 }
 
-.search-bar {
-    width: 60%;
+.matching-page .search-bar {
+    width: 40%;
     padding: 10px;
     border-radius: 20px;
     border: 1px solid #ccc;
 }
 
-/* Center the container on the page */
-.container-wrapper {
+.matching-page .container-wrapper {
     display: flex;
     justify-content: center; /* Centers card container */
     width: 100%;
 }
 
 /* Card container settings */
-.card-container {
+.matching-page .card-container {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
@@ -50,7 +48,7 @@
 }
 
 /* Card styles */
-.card {
+.matching-page .card {
     width: 240px;
     height: 350px;
     background-color: #f8f8ff;
@@ -63,7 +61,7 @@
     justify-content: space-between;
 }
 
-.profile-pic {
+.matching-page .profile-pic {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -76,12 +74,12 @@
     margin-right: 10px;
 }
 
-.card h4 {
+.matching-page .card h4 {
     display: inline-block;
     vertical-align: middle;
 }
 
-.card img {
+.matching-page .card img {
     width: 100%;
     height: 120px;
     border-radius: 10px;
@@ -90,19 +88,19 @@
 }
 
 /* Description container */
-.card .description {
+.matching-page .card .description {
     height: 91px;
     overflow: hidden;
     text-overflow: ellipsis;
     margin-top: 10px;
 }
 
-.card ul {
+.matching-page .card ul {
     margin-top: 5px;
     padding-left: 20px;
 }
 
-.buttons {
+.matching-page .buttons {
     display: flex;
     gap: 10px; /* Add space between buttons */
     margin-top: 10px;
@@ -111,19 +109,19 @@
     width: 100%; /* Ensures the buttons fill the available space */
 }
 
-.match-btn, .more-btn {
+.matching-page .match-btn, .more-btn {
     padding: 5px 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 
-.match-btn {
+.matching-page .match-btn {
     background-color: green;
     color: white;
 }
 
-.more-btn {
+.matching-page .more-btn {
     background-color: purple;
     color: white;
 }

@@ -104,7 +104,6 @@ export class Matching extends BaseComponent {
 
     containerWrapper.appendChild(cardContainer);
 
-    // Append elements to container
     this.#container.appendChild(navbar);
     this.#container.appendChild(searchContainer);
     this.#container.appendChild(containerWrapper);
