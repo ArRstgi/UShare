@@ -1,0 +1,127 @@
+.matching-page * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+.matching-page .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    width: 100%;
+}
+
+.matching-page .nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.matching-page .search-container {
+    text-align: center;
+    margin: 20px 0;
+    width: 100%;
+}
+
+.matching-page .search-bar {
+    width: 40%;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+
+.matching-page .container-wrapper {
+    display: flex;
+    justify-content: center; /* Centers card container */
+    width: 100%;
+}
+
+/* Card container settings */
+.matching-page .card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start; /* Align cards to the left */
+    max-width: 1080px; /* Fits 4 cards per row */
+    margin: auto; /* Centers the entire container */
+}
+
+/* Card styles */
+.matching-page .card {
+    width: 240px;
+    height: 350px;
+    background-color: #f8f8ff;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: left; /* Align text to the left */
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.matching-page .profile-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #ccc;
+    background-image: url("https://img.freepik.com/free-vector/isolated-young-handsome-man-different-poses-white-background-illustration_632498-859.jpg?semt=ais_hybrid");
+    background-size: 80px; /* Ensures the image covers the entire div */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents image from repeating */
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.matching-page .card h4 {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.matching-page .card img {
+    width: 100%;
+    height: 120px;
+    border-radius: 10px;
+    margin-top: 10px;
+    object-fit: cover;
+}
+
+/* Description container */
+.matching-page .card .description {
+    height: 91px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 10px;
+}
+
+.matching-page .card ul {
+    margin-top: 5px;
+    padding-left: 20px;
+}
+
+.matching-page .buttons {
+    display: flex;
+    gap: 10px; /* Add space between buttons */
+    margin-top: 10px;
+    margin-top: auto; /* Ensures buttons are always at the bottom */
+    justify-content: center; /* Centers the buttons */
+    width: 100%; /* Ensures the buttons fill the available space */
+}
+
+.matching-page .match-btn, .more-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.matching-page .match-btn {
+    background-color: green;
+    color: white;
+}
+
+.matching-page .more-btn {
+    background-color: purple;
+    color: white;
+}
