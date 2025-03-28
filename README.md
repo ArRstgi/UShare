@@ -6,6 +6,7 @@ Project Description
 - Key Features: User profiles with skills and interests; Matching system for learners & teachers; Chat and scheduling tools; Rating & review system; Login page
 - Why This Project?: This application will make it so much easier for people to learn the skills that they’ve been procrastinating for a long time. This will benefit everyone and no one will go unrewarded. 
 
+Milestone 4 Slides: https://docs.google.com/presentation/d/1OdzEit2FyDQR0cfcLaHQdJ2mwV_gRVek8wv_oklMdGE/edit?usp=sharing
 
 
 Team Member List:
