@@ -29,21 +29,6 @@ export class ReviewPage extends BaseComponent {
   #setupContainerContent() {
     if (!this.#container) return;
 
-    /*
-    // Navbar
-    const navbar = document.createElement("nav");
-    navbar.className = "navbar";
-    navbar.innerHTML = `
-      <div class="logo">UShare</div>
-      <div class="nav-buttons">
-        <a href="/home" id="home">Home</a>
-        <a href="/matches" id="matches">Matches</a>
-        <a href="/messages" id="messages">Messages</a>
-      </div>
-    `;
-    this.#container.appendChild(navbar);
-    */
-
     // Main content
     const main = document.createElement("main");
     main.className = "main-content";
