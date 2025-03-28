@@ -30,21 +30,6 @@ export class UserProfilePage extends BaseComponent {
 
     const header = document.createElement("header");
 
-    const logo = document.createElement("div");
-    logo.classList.add("logo");
-    logo.innerText = "UShare";
-
-
-    ["Home", "Matches", "Messages"].forEach((btnText) => {
-      const button = document.createElement("button");
-      button.innerText = btnText;
-
-    });
-
-    header.appendChild(logo);
-
-
-
     const mainContent = document.createElement("main");
     mainContent.classList.add("main-content");
 
@@ -99,36 +84,8 @@ export class UserProfilePage extends BaseComponent {
     mainContent.appendChild(leftContent);
     mainContent.appendChild(rightContent);
 
-  
-    const footer = document.createElement("footer");
-
-    const footerLeft = document.createElement("div");
-    footerLeft.classList.add("footer-left");
-    footerLeft.innerText = "UShare";
-
-    const footerRight = document.createElement("div");
-    footerRight.classList.add("footer-right");
-
-  
-    for (let i = 0; i < 3; i++) {
-      const footerColumn = document.createElement("div");
-      footerColumn.classList.add("footer-column");
-      footerColumn.innerHTML = `
-        <h4>Topic</h4>
-        <p>Page</p>
-        <p>Page</p>
-        <p>Page</p>
-        <p>Page</p>
-      `;
-      footerRight.appendChild(footerColumn);
-    }
-
-    footer.appendChild(footerLeft);
-    footer.appendChild(footerRight);
-
     // Add everything to the main container
     this.#container.appendChild(header);
     this.#container.appendChild(mainContent);
-    this.#container.appendChild(footer);
   }
 }
