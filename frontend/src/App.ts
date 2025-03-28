@@ -4,7 +4,7 @@ import { BaseComponent } from "@/components/BaseComponent";
 import { Navbar } from "@/components/Navbar";
 import { Events, EventHub } from "@/lib/eventhub";
 import { UserProfilePage } from "@/pages/UserProfile";
-
+import { Matching } from "@/pages/Matching";
 
 export default class App {
   #container: HTMLElement | null = null; // Private container for the component
@@ -17,9 +17,10 @@ export default class App {
     this.#hub = EventHub.getInstance();
     this.#hub.subscribe(Events.NavigateTo, (page: string) => this.#navigateTo(page));
     this.#pageComponents = {
-      home: new TaskListPage(),
+      home: new Matching(),
       login: new LoginPage(),
-      profile: new UserProfilePage()
+      profile: new UserProfilePage(),
+      matching: new Matching()
     };
   }
 
@@ -63,13 +64,16 @@ export default class App {
       case "":
       case "/":
       case "/home":
-        this.#currentPage = "home";
+        this.#currentPage = "matching";
         break;
       case "/login":
         this.#currentPage = "login";
         break;
       case "/profile":
         this.#currentPage = "profile";
+        break;
+      case "/matching":
+        this.#currentPage = "matching";
         break;
       default:
         this.#currentPage = "404";
