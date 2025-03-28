@@ -1,0 +1,133 @@
+/*
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+}
+
+.nav-buttons a {
+  margin: 0 1rem;
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+*/
+
+.leave-review-btn {
+  display: block;
+  margin: 2rem auto;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.leave-review-btn:hover {
+  background-color: #555;
+}
+
+.reviews {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.review-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #fff;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: left;
+}
+
+.teacher-name {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+.skill {
+  font-size: 1rem;
+  color: #666;
+}
+
+/* Base styling for the review body */
+.review-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  max-width: 600px;
+  margin: 1rem auto;
+}
+
+/* Layout for reviewer info */
+.reviewer-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Styling for profile pic */
+.reviewer-profile-pic {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* Name and date styling */
+.reviewer-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.review-date {
+  font-size: 0.9rem;
+  color: #888;
+  margin: 0;
+}
+
+/* Flex container for name and date */
+.reviewer-info div {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Styling for the review text */
+.review-text {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #333;
+  margin: 0;
+}
+
+.star-container .star {
+  color: black;
+  font-size: 1.25rem;
+}
+
+.star-container .star.empty {
+  color: white;
+  -webkit-text-stroke: 1px black;
+}
+

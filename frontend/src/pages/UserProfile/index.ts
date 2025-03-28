@@ -34,17 +34,15 @@ export class UserProfilePage extends BaseComponent {
     logo.classList.add("logo");
     logo.innerText = "UShare";
 
-    const navButtons = document.createElement("div");
-    navButtons.classList.add("nav-buttons");
 
     ["Home", "Matches", "Messages"].forEach((btnText) => {
       const button = document.createElement("button");
       button.innerText = btnText;
-      navButtons.appendChild(button);
+
     });
 
     header.appendChild(logo);
-    header.appendChild(navButtons);
+
 
 
     const mainContent = document.createElement("main");
