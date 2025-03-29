@@ -23,18 +23,9 @@ export class Matching extends BaseComponent {
 
   #setupContainerContent() {
     if (!this.#container) return;
-
-    // Navbar
-    const navbar = document.createElement("div");
-    navbar.classList.add("navbar");
-
+    
     const logo = document.createElement("div");
     logo.classList.add("logo");
-
-    const navLinks = document.createElement("div");
-    navLinks.classList.add("nav-links");
-
-    navbar.appendChild(navLinks);
 
     // Search Bar
     const searchContainer = document.createElement("div");
@@ -104,7 +95,6 @@ export class Matching extends BaseComponent {
 
     containerWrapper.appendChild(cardContainer);
 
-    this.#container.appendChild(navbar);
     this.#container.appendChild(searchContainer);
     this.#container.appendChild(containerWrapper);
   }

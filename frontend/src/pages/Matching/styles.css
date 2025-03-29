@@ -5,19 +5,6 @@
     font-family: Arial, sans-serif;
 }
 
-.matching-page .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    width: 100%;
-}
-
-.matching-page .nav-links {
-    display: flex;
-    gap: 20px;
-}
-
 .matching-page .search-container {
     text-align: center;
     margin: 20px 0;

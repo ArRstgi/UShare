@@ -1,10 +1,11 @@
-import { TaskListPage } from "@/pages/TaskList";
 import { LoginPage } from "@/pages/Login";
 import { BaseComponent } from "@/components/BaseComponent";
 import { Navbar } from "@/components/Navbar";
 import { Events, EventHub } from "@/lib/eventhub";
 import { UserProfilePage } from "@/pages/UserProfile";
 import { Matching } from "@/pages/Matching";
+import { ReviewPage } from "./pages/Review";
+import { ChatPage } from "./pages/Chat";
 
 export default class App {
   #container: HTMLElement | null = null; // Private container for the component
@@ -18,9 +19,11 @@ export default class App {
     this.#hub.subscribe(Events.NavigateTo, (page: string) => this.#navigateTo(page));
     this.#pageComponents = {
       home: new Matching(),
-      login: new LoginPage(),
+      matching: new Matching(),
+      chat: new ChatPage(),
       profile: new UserProfilePage(),
-      matching: new Matching()
+      reviews: new ReviewPage(),
+      login: new LoginPage(),
     };
   }
 
@@ -66,14 +69,20 @@ export default class App {
       case "/home":
         this.#currentPage = "matching";
         break;
-      case "/login":
-        this.#currentPage = "login";
+      case "/matching":
+        this.#currentPage = "matching";
+        break;
+      case "/chat":
+        this.#currentPage = "chat";
         break;
       case "/profile":
         this.#currentPage = "profile";
         break;
-      case "/matching":
-        this.#currentPage = "matching";
+      case "/reviews":
+        this.#currentPage = "reviews";
+        break;
+      case "/login":
+        this.#currentPage = "login";
         break;
       default:
         this.#currentPage = "404";

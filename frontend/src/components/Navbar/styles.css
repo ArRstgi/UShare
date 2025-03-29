@@ -1,4 +1,32 @@
 .navbar {
   display: flex;
-  gap: 4rem;
+  justify-content: space-between; /* Distribute space between items */
+  align-items: center; /* Vertically align items in the center */
+  position: fixed; /* Fix the navbar to the top */
+  top: 0;
+  left: 0;
+  width: 100%; /* Make it span the entire width */
+  padding: 1rem 0rem; /* Add some padding for spacing */
+  background-color: #f8f8f8; /* Optional: Add a background color */
+  z-index: 1000; /* Ensure it stays on top of other content */
+}
+
+.ushare {
+  /* Style for the "UShare" text (optional) */
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 0rem 2rem;
+  color: #333; /* Set link color */
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem; /* Adjust the gap between links */
+  padding: 0rem 2rem;
+}
+
+.nav-links a {
+  text-decoration: none; /* Remove underlines from links */
+  color: #333; /* Set link color */
 }
