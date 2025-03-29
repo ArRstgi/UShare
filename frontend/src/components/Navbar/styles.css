@@ -30,3 +30,30 @@
   text-decoration: none; /* Remove underlines from links */
   color: #333; /* Set link color */
 }
+
+@media (max-width: 768px) {
+  .navbar {
+      padding: 1rem 0rem; /* Restore original padding for larger screens */
+  }
+
+  .ushare {
+      font-size: 1rem; /* Restore original font size */
+  }
+
+  .nav-links {
+      display: flex; /* Show links on larger screens */
+      flex-direction: row; /* Display links horizontally */
+      position: static; /* Reset positioning */
+      width: auto;
+      gap: 0.5rem;
+      background-color: transparent;
+      box-shadow: none;
+      text-align: left; /* Reset text alignment */
+      font-size: 0.75rem;
+  }
+
+  .nav-links a {
+      padding: 0; /* Remove vertical padding for horizontal layout */
+      display: inline; /* Display inline for horizontal layout */
+  }
+}
