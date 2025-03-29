@@ -1,31 +1,32 @@
+/* Base styles (apply to all screen sizes) */
 .messages-page {
     display: flex;
     width: 100%;
-    height: 90vh;
+    height: auto; /* Adjust height for content */
+    min-height: 90vh; /* Ensure at least 90% of viewport height */
     box-sizing: border-box;
     padding: 0;
+    flex-direction: column; /* Stack elements vertically by default for mobile */
 }
-
 
 /* Messages List (Left Side) */
 .messages-list {
-    width: 300px;
+    width: 100%; /* Take full width on mobile */
     background-color: #f8f9fa;
-    border-right: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6; /* Move border to bottom on mobile */
     padding: 15px;
     box-sizing: border-box;
     overflow-y: auto;
+    order: 1; /* Ensure it appears before conversation view in default mobile layout */
 }
-
 
 .messages-list h2 {
     margin-top: 0;
     margin-bottom: 15px;
-    font-size: 1.2rem;
+    font-size: 1.1rem; /* Slightly smaller font for mobile */
     color: #495057;
     text-align: center;
 }
-
 
 .messages-list ul {
     list-style: none;
@@ -33,39 +34,34 @@
     margin: 0;
 }
 
-
 .message-item {
-    display: flex;  
+    display: flex;
     align-items: flex-start;
     padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    margin-bottom: 15px;
+    margin-bottom: 10px; /* Slightly reduced margin */
     text-align: left;
 }
-
 
 .message-item:hover {
     background-color: #e9ecef;
 }
-
 
 .message-item.active {
     background-color: #000000;
     color: white;
 }
 
-
 .message-item.active .user-name,
 .message-item.active .availability {
     color: white;
 }
 
-
 .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 35px; /* Slightly smaller avatar */
+    height: 35px; /* Slightly smaller avatar */
     border-radius: 50%;
     background-color: #ced4da;
     color: #495057;
@@ -74,20 +70,18 @@
     align-items: center;
     margin-right: 10px;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 0.9rem; /* Slightly smaller font in avatar */
 }
-
 
 .user-info {
     display: flex;
     flex-direction: column;
 }
 
-
 .user-name {
     margin-top: 0;
     margin-bottom: 2px;
-    font-size: 1rem;
+    font-size: 0.9rem; /* Slightly smaller font for username */
     color: #343a40;
     overflow: hidden;
     white-space: nowrap;
@@ -96,13 +90,11 @@
     text-align: left;
 }
 
-
 .availability {
-    font-size: 0.8rem;
+    font-size: 0.7rem; /* Slightly smaller font for availability */
     color: #6c757d;
     text-align: left;
 }
-
 
 /* Conversation View (Right Side) */
 .conversation-view {
@@ -111,8 +103,8 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    order: 2; /* Ensure it appears after messages list in default mobile layout */
 }
-
 
 .conversation-header {
     padding-bottom: 15px;
@@ -120,20 +112,17 @@
     margin-bottom: 15px;
 }
 
-
 .conversation-header h2 {
     margin-top: 0;
     margin-bottom: 5px;
-    font-size: 1.2rem;
+    font-size: 1.1rem; /* Slightly smaller font for mobile */
     color: #343a40;
 }
 
-
 .conversation-header .response-time {
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* Slightly smaller font for mobile */
     color: #6c757d;
 }
-
 
 .conversation-messages {
     flex-grow: 1;
@@ -143,13 +132,11 @@
     flex-direction: column;
 }
 
-
 .message-wrapper {
     display: flex;
     flex-direction: column;
     margin-bottom: 5px;
 }
-
 
 .message {
     background-color: #e9ecef;
@@ -157,11 +144,11 @@
     padding: 10px 15px;
     border-radius: 8px;
     width: fit-content;
-    max-width: 80%;
+    max-width: 90%; /* Increase max-width for better readability on smaller screens */
     word-break: break-word;
     text-align: left;
+    font-size: 0.9rem; /* Adjust message font size */
 }
-
 
 .message.sent {
     background-color: #000000;
@@ -169,28 +156,23 @@
     align-self: flex-end;
 }
 
-
 .message.received {
     align-self: flex-start;
 }
 
-
 .message-time {
-    font-size: 0.7rem;
+    font-size: 0.65rem; /* Slightly smaller font for time */
     color: #6c757d;
     margin-top: 2px;
 }
-
 
 .message.sent + .message-time {
     align-self: flex-end;
 }
 
-
 .message.received + .message-time {
     align-self: flex-start;
 }
-
 
 .message-input-area {
     display: flex;
@@ -199,29 +181,126 @@
     border-top: 1px solid #dee2e6;
 }
 
-
 .message-input-area input[type="text"] {
     flex-grow: 1;
     padding: 10px;
     border: 1px solid #ced4da;
     border-radius: 5px;
     margin-right: 10px;
-    font-size: 1rem;
+    font-size: 0.9rem; /* Adjust input font size */
 }
-  
-  
+
+
 .message-input-area button {
     background-color: #000000;
     color: white;
     border: none;
     padding: 10px 15px;
-    font-size: 1rem;
+    font-size: 0.9rem; /* Adjust button font size */
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-  
-  
+
+
 .message-input-area button:hover {
     background-color: #0056b3;
+}
+
+/* Media query for larger screens (e.g., tablets and desktops) */
+@media (min-width: 768px) {
+    .messages-page {
+        flex-direction: row; /* Switch to row layout for larger screens */
+    }
+
+    .messages-list {
+        width: 300px; /* Restore original width for larger screens */
+        border-right: 1px solid #dee2e6; /* Restore right border */
+        border-bottom: none; /* Remove bottom border */
+        order: 0; /* Reset order */
+    }
+
+    .conversation-view {
+        order: 0; /* Reset order */
+    }
+
+    .messages-list h2 {
+        font-size: 1.2rem; /* Restore original font size */
+    }
+
+    .conversation-header h2 {
+        font-size: 1.2rem; /* Restore original font size */
+    }
+
+    .message {
+        max-width: 80%; /* Restore original max-width */
+        font-size: 1rem; /* Restore original font size */
+    }
+
+    .user-avatar {
+        width: 40px; /* Restore original avatar size */
+        height: 40px; /* Restore original avatar size */
+        font-size: 1rem; /* Restore original font size in avatar */
+    }
+
+    .user-name {
+        font-size: 1rem; /* Restore original font size for username */
+    }
+
+    .availability {
+        font-size: 0.8rem; /* Restore original font size for availability */
+    }
+
+    .message-input-area input[type="text"] {
+        font-size: 1rem; /* Restore original input font size */
+    }
+
+    .message-input-area button {
+        font-size: 1rem; /* Restore original button font size */
+    }
+}
+
+/* Further adjustments for very small screens (optional) */
+@media (max-width: 480px) {
+    .messages-list {
+        padding: 10px; /* Reduce padding on very small screens */
+    }
+
+    .message-item {
+        padding: 8px 10px; /* Reduce padding on message items */
+        margin-bottom: 8px; /* Reduce margin on message items */
+    }
+
+    .user-avatar {
+        width: 30px;
+        height: 30px;
+        margin-right: 8px;
+    }
+
+    .conversation-view {
+        padding: 10px; /* Reduce padding on very small screens */
+    }
+
+    .conversation-header {
+        padding-bottom: 10px; /* Reduce padding in header */
+        margin-bottom: 10px; /* Reduce margin in header */
+    }
+
+    .message {
+        padding: 8px 12px; /* Reduce padding in messages */
+    }
+
+    .message-input-area {
+        padding-top: 10px; /* Reduce padding in input area */
+    }
+
+    .message-input-area input[type="text"] {
+        padding: 8px; /* Reduce padding in input field */
+        font-size: 0.85rem; /* Further reduce input font size */
+    }
+
+    .message-input-area button {
+        padding: 8px 12px; /* Reduce padding in button */
+        font-size: 0.85rem; /* Further reduce button font size */
+    }
 }
