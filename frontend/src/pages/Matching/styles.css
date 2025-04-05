@@ -112,3 +112,40 @@
     background-color: purple;
     color: white;
 }
+
+/* Add these to your existing styles.css */
+.match-btn {
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+  }
+  
+  .match-btn:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .match-btn.matched {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+  }
+  
+  .match-btn.matched:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .more-btn {
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+  }
+  
+  .more-btn:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
