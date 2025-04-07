@@ -1,4 +1,5 @@
 import { BaseComponent } from "@/components/BaseComponent";
+import { SignUpPage } from "@/pages/SignUp";
 
 export class LoginPage extends BaseComponent {
   #container: HTMLElement | null = null;
@@ -52,10 +53,21 @@ export class LoginPage extends BaseComponent {
       <p class="signup-link">Don't have an account? <a href="#">Sign up</a></p>
     `;
 
+    
+
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       this.#handleFormSubmit();
+    });
+
+    // Navigate to SignUpPage when "Sign up" link is clicked.
+    const signupLink = form.querySelector(".signup-link a");
+    signupLink?.addEventListener("click", (e) => {
+      e.preventDefault();
+      const signUpPage = new SignUpPage();
+      document.body.innerHTML = "";
+      document.body.appendChild(signUpPage.render());
     });
 
 
