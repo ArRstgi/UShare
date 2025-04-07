@@ -8,6 +8,7 @@ Project Description
 
 Milestone 4 Slides: https://docs.google.com/presentation/d/1OdzEit2FyDQR0cfcLaHQdJ2mwV_gRVek8wv_oklMdGE/edit?usp=sharing
 
+Milestone 5 Slides: https://docs.google.com/presentation/d/1TJpVEVYcDdQLvXY2qz2p1xP3Usn_ZMu-VdqhRwoBMIw/edit?usp=sharing
 
 Team Member List:
 - Michael Ye
