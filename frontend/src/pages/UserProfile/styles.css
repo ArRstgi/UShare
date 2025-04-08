@@ -108,41 +108,90 @@
   color: #555;
 }
 
-/* Responsive */
+.upload-area {
+  border: 2px dashed #aaa;
+  padding: 20px;
+  text-align: center;
+  margin: 20px 0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.upload-area p {
+  font-size: 16px;
+  color: #555;
+}
+
+.upload-area.drag-over {
+  border-color: #333;
+  background-color: #e0e0e0;
+}
+
+.profile-details {
+  margin-bottom: 20px;
+}
+
+.profile-details div {
+  margin-bottom: 10px;
+}
+
+.profile-details label {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.profile-details input {
+  width: 100%;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+}
+
 @media (max-width: 900px) {
   .user-profile-page .main-content {
     flex-direction: column;
     align-items: flex-start;
   }
-
   .user-profile-page .right-content {
     align-items: flex-start;
     width: 100%;
   }
-
   .user-profile-page .profile-photo {
     width: 300px;
     height: 400px;
     max-width: none;
   }
-
   .user-profile-page footer {
     flex-direction: column;
     gap: 30px;
   }
-
   .user-profile-page .footer-right {
     gap: 40px;
   }
-
   .user-profile-page header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-
   .user-profile-page .logo {
     font-size: 24px;
   }
+}
 
+@media (max-width: 600px) {
+  .upload-area {
+    padding: 15px;
+    margin: 15px 0;
+  }
+  .upload-area p {
+    font-size: 14px;
+  }
+  .upload-area .preview-image {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+  }
+  .profile-details input {
+    font-size: 14px;
+  }
 }
