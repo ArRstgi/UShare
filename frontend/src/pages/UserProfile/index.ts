@@ -26,7 +26,7 @@ export class UserProfilePage extends BaseComponent {
 
   
   initIndexedDB() {
-    const request = indexedDB.open("UShareDB", 3);
+    const request = indexedDB.open("UShareDB", 1);
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains("userProfilePhoto")) {
