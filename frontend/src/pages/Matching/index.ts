@@ -117,6 +117,15 @@ export class Matching extends BaseComponent {
         if (!db.objectStoreNames.contains("cards")) {
           db.createObjectStore("cards", { keyPath: "id" });
         }
+        if (!db.objectStoreNames.contains("userProfilePhoto")) {
+          db.createObjectStore("userProfilePhoto");
+        }
+        if (!db.objectStoreNames.contains("userProfileDetails")) {
+          db.createObjectStore("userProfileDetails");
+        }
+        if (!db.objectStoreNames.contains("registration")) {
+          db.createObjectStore("registration");
+        }
       };
   
       request.onsuccess = () => {
