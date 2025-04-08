@@ -1,504 +1,611 @@
 import { BaseComponent } from "@/components/BaseComponent";
+import { DatabaseService } from "../../services/database-service";
+import {
+  USERS_STORE,
+  MESSAGES_STORE,
+  ALLOWED_FILE_TYPES,
+  paperclipIconSVG,
+  initialUsersData,
+} from "./constants";
+import type { User, Message } from "./types";
+import { formatTimestamp, getFileIcon } from "./chat-utils";
 
-const paperclipIconSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-paperclip">
-  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-</svg>`;
-
-interface User {
-  name: string;
-  lastMessage: string;
-  date?: string;
-  time?: string;
-  availability: string;
-}
-
-interface Message {
-  sender: string;
-  text: string;
-  time?: string;
-  date?: string;
-}
-
-// Dummy users data
-
-const users: User[] = [
-  {
-    name: "User 1",
-    lastMessage: "Hi",
-    date: "May 27, 2022",
-    availability: "Online",
-  },
-  {
-    name: "User 2",
-    lastMessage: "Hi",
-    time: "10:54 PM",
-    availability: "Offline",
-  },
-  {
-    name: "User 3",
-    lastMessage: "Hi",
-    date: "May 28, 2022",
-    availability: "Busy",
-  },
-  {
-    name: "User 4",
-    lastMessage: "Thank you for your inquiry...",
-    date: "May 28, 2022",
-    availability: "Online",
-  },
-  {
-    name: "User 5",
-    lastMessage: "Hi",
-    date: "May 29, 2022",
-    availability: "Away",
-  },
-  {
-    name: "User 6",
-    lastMessage: "Hi",
-    date: "May 29, 2022",
-    availability: "Online",
-  },
-];
-
+/**
+ * Controller for the Chat Page, managing state, DB, and DOM directly.
+ */
 export class ChatPage extends BaseComponent {
+  // Main container
   #container: HTMLElement | null = null;
-  #messagesList: HTMLElement | null = null;
+
+  // Service
+  #dbService: DatabaseService;
+
+  // UI Element References
+  #messagesListUL: HTMLUListElement | null = null;
   #conversationView: HTMLElement | null = null;
+  #conversationHeader: HTMLElement | null = null;
+  #conversationMessagesContainer: HTMLElement | null = null;
   #messageInput: HTMLInputElement | null = null;
   #sendMessageButton: HTMLButtonElement | null = null;
-  #attachFileButton: HTMLButtonElement | null = null; // Added for paperclip
-  #searchInput: HTMLInputElement | null = null; // Added for search bar
+  #attachFileButton: HTMLButtonElement | null = null;
+  #hiddenFileInput: HTMLInputElement | null = null;
+  #searchInput: HTMLInputElement | null = null;
+
+  // State
   #cur_user: User | null = null;
+  #searchDebounceTimer: number | null = null;
 
   constructor() {
     super();
     this.loadCSS("src/pages/Chat", "styles");
+    this.#dbService = new DatabaseService();
   }
 
-  render() {
-    if (this.#container) {
-      return this.#container;
-    }
-
+  render(): HTMLElement {
+    if (this.#container) return this.#container;
     this.#container = document.createElement("div");
     this.#container.classList.add("messages-page");
-    this.#setupContainerContent();
-    this.#attachEventListeners();
-
+    this.#setupContainerLayout(); // Build structure
+    this.#attachEventListeners(); // Attach listeners
+    this.#initializePage(); // Start async setup
     return this.#container;
   }
 
-  /**
-   * Sets up the main content structure of the chat page.
-   * This includes creating the left sidebar for the messages list
-   * and the right section for the current conversation view.
-   */
-  #setupContainerContent() {
+  /** Sets up the static DOM layout, including search and input area with attach */
+  #setupContainerLayout() {
     if (!this.#container) return;
-
-    this.#messagesList = document.createElement("aside");
-    this.#messagesList.classList.add("messages-list");
+    // Left Sidebar
+    const messagesListAside = document.createElement("aside");
+    messagesListAside.classList.add("messages-list");
     const messagesTitle = document.createElement("h2");
     messagesTitle.textContent = "Messages";
-    this.#messagesList.appendChild(messagesTitle);
-
-    // Search Bar
+    messagesListAside.appendChild(messagesTitle);
+    // Search Input (Restored)
     this.#searchInput = document.createElement("input");
     this.#searchInput.type = "search";
     this.#searchInput.placeholder = "Search messages";
     this.#searchInput.classList.add("messages-search-input");
-    this.#messagesList.appendChild(this.#searchInput);
+    messagesListAside.appendChild(this.#searchInput);
+    this.#messagesListUL = document.createElement("ul");
+    messagesListAside.appendChild(this.#messagesListUL);
 
-    this.#populateMessagesList();
-
+    // Right Side (Conversation)
     this.#conversationView = document.createElement("main");
     this.#conversationView.classList.add("conversation-view");
-    const initialUser = users[0];
-    this.#setupConversationHeader(initialUser?.name || "Select a chat");
-    this.#setupConversationMessages(initialUser);
-    this.#setupMessageInputArea();
+    // Header
+    this.#conversationHeader = document.createElement("header");
+    this.#conversationHeader.classList.add("conversation-header");
+    this.#conversationView.appendChild(this.#conversationHeader);
+    // Messages Container
+    this.#conversationMessagesContainer = document.createElement("div");
+    this.#conversationMessagesContainer.classList.add("conversation-messages");
+    this.#conversationView.appendChild(this.#conversationMessagesContainer);
+    // Input Area (Now includes attach button)
+    this.#setupMessageInputArea(); // Appends to #conversationView
 
-    this.#container.appendChild(this.#messagesList);
+    // Append main sections
+    this.#container.appendChild(messagesListAside);
     this.#container.appendChild(this.#conversationView);
   }
 
+  /** Creates and appends the message input area, including attach button */
+  #setupMessageInputArea() {
+    if (!this.#conversationView) return;
+    const inputArea = document.createElement("div");
+    inputArea.classList.add("message-input-area");
+    // Text Input
+    this.#messageInput = document.createElement("input");
+    this.#messageInput.type = "text";
+    this.#messageInput.placeholder = "Type a message or drop a file";
+    // Hidden File Input
+    this.#hiddenFileInput = document.createElement("input");
+    this.#hiddenFileInput.type = "file";
+    this.#hiddenFileInput.multiple = false;
+    this.#hiddenFileInput.accept = ALLOWED_FILE_TYPES.join(",");
+    this.#hiddenFileInput.style.display = "none";
+    // Attach Button
+    this.#attachFileButton = document.createElement("button");
+    this.#attachFileButton.classList.add("attach-file-button");
+    this.#attachFileButton.type = "button";
+    this.#attachFileButton.title = "Attach File";
+    this.#attachFileButton.innerHTML = paperclipIconSVG;
+    // Send Button
+    this.#sendMessageButton = document.createElement("button");
+    this.#sendMessageButton.textContent = "Send";
+    this.#sendMessageButton.type = "button";
+    // Append elements
+    inputArea.appendChild(this.#messageInput);
+    inputArea.appendChild(this.#hiddenFileInput); // Needs to be in DOM
+    inputArea.appendChild(this.#attachFileButton);
+    inputArea.appendChild(this.#sendMessageButton);
+    this.#conversationView.appendChild(inputArea);
+  }
+
+  /** Attaches all required event listeners */
+  #attachEventListeners() {
+    // Input Area
+    this.#sendMessageButton?.addEventListener("click", this.#handleSendMessage);
+    this.#messageInput?.addEventListener("keypress", this.#handleInputKeyPress);
+    this.#attachFileButton?.addEventListener("click", this.#triggerFileInput);
+    this.#hiddenFileInput?.addEventListener("change", this.#handleFileSelected);
+    // Search
+    this.#searchInput?.addEventListener("input", this.#handleSearchInput);
+    // Drag/Drop
+    this.#conversationView?.addEventListener("dragover", this.#handleDragOver);
+    this.#conversationView?.addEventListener(
+      "dragleave",
+      this.#handleDragLeave
+    );
+    this.#conversationView?.addEventListener("drop", this.#handleDrop);
+  }
+
+  /** Coordinates async setup */
+  async #initializePage() {
+    try {
+      await this.#dbService.ready();
+      await this.#populateInitialUsers();
+      await this.#renderUserList(); // Initial list render
+      await this.#loadInitialConversation();
+    } catch (error) {
+      console.error("Failed to initialize chat page:", error);
+      this.#showConversationPlaceholder("Error loading chat.", true);
+    }
+  }
+
+  /** Populates DB with initial users if needed */
+  async #populateInitialUsers() {
+    const userCount = await this.#dbService.count(USERS_STORE);
+    if (userCount === 0) {
+      console.log("Populating initial users...");
+      // Include availability now
+      const putPromises = initialUsersData.map((user) =>
+        this.#dbService.put(USERS_STORE, {
+          name: user.name,
+          availability: user.availability,
+        })
+      );
+      await Promise.all(putPromises);
+      console.log("Initial users populated.");
+    }
+  }
+
   /**
-   * Populates the left sidebar with a list of users and their last messages.
-   * It creates the necessary DOM elements for each user and attaches
-   * a click event listener to handle switching to their chat.
+   * Fetches users (with stored preview info) and renders the list.
+   * Sorts by the stored timestamp. Applies filtering.
    */
-  #populateMessagesList() {
-    if (!this.#messagesList) return;
+  async #renderUserList(filterTerm: string = "") {
+    if (!this.#messagesListUL) return;
+    this.#messagesListUL.innerHTML = ""; // Clear list
 
-    const initialActiveUser = users[0];
+    try {
+      // Fetch users - they now have lastMessageTimestamp/Text stored on them
+      const users = await this.#dbService.getAll<User>(USERS_STORE);
 
-    const ul = document.createElement("ul");
-    users.forEach((user) => {
-      const li = document.createElement("li");
-      li.classList.add("message-item");
-      li.dataset.userName = user.name;
+      // Sort directly using the stored timestamp
+      users.sort(
+        (a, b) => (b.lastMessageTimestamp ?? 0) - (a.lastMessageTimestamp ?? 0)
+      );
 
-      // Set the active class based on the initialActiveUser
-      if (initialActiveUser && user.name === initialActiveUser.name) {
-        li.classList.add("active");
-        this.#cur_user = user; // Set the current user
+      // Apply search filter
+      let filteredUsers = users;
+      if (filterTerm) {
+        const lower = filterTerm.toLowerCase();
+        // Search name, availability, and last message text
+        filteredUsers = users.filter(
+          (u) =>
+            u.name.toLowerCase().includes(lower) ||
+            u.availability.toLowerCase().includes(lower) ||
+            u.lastMessageText?.toLowerCase().includes(lower)
+        );
       }
 
-      const userAvatar = document.createElement("div");
-      userAvatar.classList.add("user-avatar");
-      // Use first letter of the name, fallback to 'User'
-      userAvatar.textContent = user.name
-        ? user.name.charAt(0).toUpperCase()
-        : "User";
-
-      const userInfo = document.createElement("div");
-      userInfo.classList.add("user-info");
-
-      const userName = document.createElement("h3");
-      userName.classList.add("user-name");
-      userName.textContent = user.name;
-
-      const availability = document.createElement("span");
-      availability.classList.add("availability");
-      availability.textContent = user.availability || "Offline";
-
-      userInfo.appendChild(userName);
-      userInfo.appendChild(availability);
-
-      li.appendChild(userAvatar);
-      li.appendChild(userInfo);
-      ul.appendChild(li);
-
-      li.addEventListener("click", () => {
-        this.#handleChatSwitch(user);
+      // Render the filtered and sorted list
+      filteredUsers.forEach((user) => {
+        const li = this.#createUserListItemElement(user);
+        this.#messagesListUL?.appendChild(li);
       });
-    });
-    this.#messagesList.appendChild(ul);
+
+      this.#updateActiveUserHighlight(); // Ensure current user is highlighted
+    } catch (error) {
+      console.error("Failed to render user list:", error);
+      this.#messagesListUL.innerHTML =
+        "<li class='error-message'>Failed to load users.</li>";
+    }
   }
 
-  /**
-   * Handles the logic for switching between different chats when a user
-   * in the messages list is clicked. This updates the active highlight,
-   * the current user, the conversation header, and the displayed messages.
-   * @param selectedUser The user object representing the chat to switch to.
-   */
-  #handleChatSwitch(selectedUser: User) {
-    if (
-      !this.#messagesList ||
-      !this.#conversationView ||
-      this.#cur_user?.name === selectedUser.name
-    )
-      return; // Don't re-render if same user clicked
-
-    // Remove active class from previously active item
-    const currentActive = this.#messagesList.querySelector(
-      ".message-item.active"
-    );
-    if (currentActive) {
-      currentActive.classList.remove("active");
+  /** Creates a single user list item element, including preview/status */
+  #createUserListItemElement(user: User): HTMLLIElement {
+    const li = document.createElement("li");
+    li.classList.add("message-item");
+    li.dataset.userName = user.name;
+    // Avatar
+    const userAvatar = document.createElement("div");
+    userAvatar.classList.add("user-avatar");
+    userAvatar.textContent = user.name
+      ? user.name.charAt(0).toUpperCase()
+      : "User";
+    // Info
+    const userInfo = document.createElement("div");
+    userInfo.classList.add("user-info");
+    const userName = document.createElement("h3");
+    userName.classList.add("user-name");
+    userName.textContent = user.name;
+    // Preview (uses data from User object)
+    const lastMessagePreview = document.createElement("p");
+    lastMessagePreview.classList.add("last-message-preview");
+    let previewText = user.lastMessageText || "";
+    lastMessagePreview.textContent =
+      previewText.length > 30
+        ? previewText.substring(0, 27) + "..."
+        : previewText || "No messages yet";
+    // Availability/Time
+    const availabilitySpan = document.createElement("span");
+    availabilitySpan.classList.add("availability");
+    let subText = user.availability || "Offline"; // Use stored availability
+    if (user.lastMessageTimestamp) {
+      subText += ` • ${formatTimestamp(user.lastMessageTimestamp)}`; // Use stored timestamp
     }
+    availabilitySpan.textContent = subText;
+    // Assemble Info
+    userInfo.appendChild(userName);
+    userInfo.appendChild(lastMessagePreview);
+    userInfo.appendChild(availabilitySpan);
+    // Assemble Item
+    li.appendChild(userAvatar);
+    li.appendChild(userInfo);
+    li.addEventListener("click", () => this.#handleUserSelected(user));
+    return li;
+  }
 
-    // Add active class to the newly selected item
-    const newActiveItem = this.#messagesList.querySelector(
-      `.message-item[data-user-name="${selectedUser.name}"]`
+  /** Loads the first conversation or placeholder */
+  async #loadInitialConversation() {
+    const users = await this.#dbService.getAll<User>(USERS_STORE);
+    // Sort by stored timestamp to potentially load the most recent chat first
+    users.sort(
+      (a, b) => (b.lastMessageTimestamp ?? 0) - (a.lastMessageTimestamp ?? 0)
     );
-    if (newActiveItem) {
-      newActiveItem.classList.add("active");
+    if (users.length > 0) {
+      await this.#handleUserSelected(users[0]);
+    } else {
+      this.#cur_user = null;
+      this.#updateConversationHeader("Select a chat");
+      this.#showConversationPlaceholder("No users available.");
+      this.#updateActiveUserHighlight();
     }
+  }
 
+  /** Updates highlighting in the user list */
+  #updateActiveUserHighlight() {
+    this.#messagesListUL
+      ?.querySelectorAll(".message-item.active")
+      .forEach((el) => el.classList.remove("active"));
+    if (this.#cur_user) {
+      const activeItem = this.#messagesListUL?.querySelector(
+        `.message-item[data-user-name="${this.#cur_user.name}"]`
+      );
+      activeItem?.classList.add("active");
+    }
+  }
+
+  // Event Handlers / Actions
+
+  #handleInputKeyPress = (event: KeyboardEvent): void => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      this.#handleSendMessage();
+    }
+  };
+
+  #triggerFileInput = (): void => {
+    this.#hiddenFileInput?.click();
+  };
+
+  #handleFileSelected = (event: Event): void => {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.#processAndSendFile(file); // Use dedicated method
+    input.value = ""; // Reset
+  };
+
+  #handleSearchInput = (event: Event) => {
+    const searchTerm = (event.target as HTMLInputElement).value;
+    if (this.#searchDebounceTimer) clearTimeout(this.#searchDebounceTimer);
+    this.#searchDebounceTimer = window.setTimeout(() => {
+      // Re-render user list with filter
+      this.#renderUserList(searchTerm).catch((err) =>
+        console.error("Search failed:", err)
+      );
+    }, 300);
+  };
+
+  #handleDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    this.#conversationView?.classList.add("drag-over");
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+  };
+  #handleDragLeave = (e: DragEvent) => {
+    if (!this.#conversationView?.contains(e.relatedTarget as Node))
+      this.#conversationView?.classList.remove("drag-over");
+  };
+  #handleDrop = (e: DragEvent) => {
+    e.preventDefault();
+    this.#conversationView?.classList.remove("drag-over");
+    if (!this.#cur_user) {
+      alert("Select chat first.");
+      return;
+    }
+    const file = e.dataTransfer?.files?.[0];
+    if (file) this.#processAndSendFile(file); // Use dedicated method
+  };
+
+  /** Handles user selection from the list */
+  #handleUserSelected = async (selectedUser: User) => {
+    if (this.#cur_user?.name === selectedUser.name) return;
     this.#cur_user = selectedUser;
+    this.#updateActiveUserHighlight();
+    this.#updateConversationHeader(selectedUser.name); // Update header (includes response time again)
+    await this.#renderConversationMessages(selectedUser);
+  };
 
-    // Update conversation view
-    this.#setupConversationHeader(selectedUser.name);
-    this.#setupConversationMessages(selectedUser); // Pass selected user
-  }
+  /** Handles sending a text message */
+  #handleSendMessage = async () => {
+    if (!this.#cur_user || !this.#messageInput?.value.trim()) return;
+    const text = this.#messageInput.value.trim();
+    this.#messageInput.value = ""; // Clear input
 
-  /**
-   * Sets up or updates the header of the conversation view with the
-   * name of the currently selected user.
-   * @param userName The name of the user whose chat is currently open.
-   */
-  #setupConversationHeader(userName: string) {
-    if (!this.#conversationView) return;
+    const newMessage: Message = {
+      sender: "You",
+      receiver: this.#cur_user.name,
+      text: text,
+      timestamp: Date.now(),
+    };
+    await this.#saveAndUpdate(newMessage); // Use common save/update logic
+  };
 
-    let header = this.#conversationView.querySelector(".conversation-header");
-
-    if (!header) {
-      header = document.createElement("header");
-      header.classList.add("conversation-header");
-      this.#conversationView.prepend(header); // Add header at the beginning
-    }
-
-    // Clear previous content and rebuild
-    header.innerHTML = "";
-
-    const userNameElement = document.createElement("h2");
-    userNameElement.textContent = userName;
-
-    const responseTime = document.createElement("p");
-    responseTime.classList.add("response-time");
-    // Only show response time if a user is selected (not on "Select a chat")
-    responseTime.textContent =
-      userName !== "Select a chat" ? "Response time : 1 hour" : "";
-
-    header.appendChild(userNameElement);
-    header.appendChild(responseTime);
-  }
-
-  /**
-   * Sets up or updates the display of messages within the conversation view.
-   * It fetches or filters messages based on the currently selected user.
-   * @param selectedUser The user whose chat messages should be displayed. Can be null.
-   */
-  #setupConversationMessages(selectedUser: User | null) {
-    if (!this.#conversationView) return;
-
-    let messagesContainer = this.#conversationView.querySelector(
-      ".conversation-messages"
-    );
-
-    // Create container if it doesn't exist
-    if (!messagesContainer) {
-      messagesContainer = document.createElement("div");
-      messagesContainer.classList.add("conversation-messages");
-      // Insert after header, before input area
-      const header = this.#conversationView.querySelector(
-        ".conversation-header"
-      );
-      const inputArea = this.#conversationView.querySelector(
-        ".message-input-area"
-      );
-      if (header && inputArea) {
-        this.#conversationView.insertBefore(messagesContainer, inputArea);
-      } else if (header) {
-        header.insertAdjacentElement("afterend", messagesContainer);
-      } else {
-        this.#conversationView.appendChild(messagesContainer);
-      }
-    }
-
-    // Clear previous messages
-    messagesContainer.innerHTML = "";
-
-    // If no user is selected, display a placeholder message
-    if (!selectedUser) {
-      const placeholder = document.createElement('p');
-      placeholder.textContent = 'Select a chat to start messaging.';
-      placeholder.style.textAlign = 'center';
-      placeholder.style.color = '#6c757d';
-      messagesContainer.appendChild(placeholder);
+  /** Processes and sends a file */
+  #processAndSendFile = async (file: File) => {
+    if (!this.#cur_user) {
+      alert("Select chat first.");
+      return;
+    } // Safety check
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      alert(`File type not allowed: ${file.type}.`);
       return;
     }
 
-    // Dummy messages data
-    const messages: Message[] = [
-      { sender: selectedUser.name, text: "Hi", time: "10:54 PM", date: "May 28, 2022"},
-      { sender: "You", text: "Hi , I want to swim , could you help . Hi , I want to swim , could you help . Hi , I want to swim , could you help . Hi , I want to swim , could you help . Hi , I want to swim , could you help . Hi , I want to swim , could you help . Hi , I want to swim , could you help .", time: "10:54 PM", date: "May 28, 2022"},
-      { sender: selectedUser.name, text: "Hi I know how to swim . I have lots of certifications . I swim most days of the week . I have good reviews .", time: "6:39 AM", date: "May 28, 2022" },
-      { sender: selectedUser.name, text: "Thank you for your inquiry and please let me know if there's anything I can do to help you swim .", time: "", date: "May 28, 2022" }, 
-    ];
+    const newMessage: Message = {
+      sender: "You",
+      receiver: this.#cur_user.name,
+      file: file,
+      fileName: file.name,
+      fileType: file.type,
+      timestamp: Date.now(),
+    };
+    await this.#saveAndUpdate(newMessage); // Use common save/update logic
+  };
 
-    messages.forEach((message) => {
-      const messageWrapper = document.createElement("div");
-      messageWrapper.classList.add("message-wrapper");
+  /** Common logic to save message, update UI, and update user preview */
+  async #saveAndUpdate(newMessage: Message) {
+    if (!this.#cur_user) return; // Should have a current user here
 
-      const messageDiv = document.createElement("div");
-      messageDiv.classList.add("message");
-      if (message.sender === "You") {
-        messageDiv.classList.add("sent");
-      } else {
-        messageDiv.classList.add("received");
-      }
+    try {
+      // 1. Save the message
+      const savedMessage = await this.#saveMessageToDB(newMessage);
 
-      const messageContent = document.createElement("p");
-      messageContent.textContent = message.text;
-      messageDiv.appendChild(messageContent);
+      // 2. Update Conversation View
+      this.#renderSingleMessageElement(savedMessage);
+      this.#scrollToBottom();
 
-      const messageTime = document.createElement("span");
-      messageTime.classList.add("message-time");
-      let timeText = "";
-      if (message.time && message.date) {
-        // Check if time is AM/PM format already
-        const timeSuffix =
-          message.time.includes("AM") || message.time.includes("PM");
-        timeText = timeSuffix
-          ? `${message.time}, ${message.date}`
-          : `${message.time} ${message.date}`; // Simple concatenation if not AM/PM
-      } else if (message.time) {
-        timeText = message.time;
-      } else if (message.date) {
-        timeText = message.date;
-      }
-
-      messageTime.textContent = timeText;
-
-      messageWrapper.appendChild(messageDiv);
-      messageWrapper.appendChild(messageTime);
-      messagesContainer?.appendChild(messageWrapper);
-    });
-
-    // Scroll to the bottom of the messages
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      // 3. Update User Store & List Item (Simplified Preview Logic)
+      const previewText = savedMessage.text ?? `File: ${savedMessage.fileName}`;
+      await this.#updateUserStoreAndPreview(
+        this.#cur_user.name,
+        previewText,
+        savedMessage.timestamp
+      );
+    } catch (error) {
+      console.error("Failed to save/update:", error);
+      alert("Failed to send message or update status.");
+    }
   }
 
-  /**
-   * Sets up the input area at the bottom of the conversation view,
-   * including the text input field, attach button, and the send button.
-   */
-  #setupMessageInputArea() {
-    if (!this.#conversationView) return;
+  /** Updates User store and DOM list item */
+  async #updateUserStoreAndPreview(
+    userName: string,
+    text: string,
+    timestamp: number
+  ) {
+    try {
+      // Fetch the user
+      const user = await this.#dbService.get<User>(USERS_STORE, userName);
+      if (!user) return; // User not found
 
-    let inputArea = this.#conversationView.querySelector(".message-input-area");
+      // Update preview fields
+      user.lastMessageText = text;
+      user.lastMessageTimestamp = timestamp;
 
-    if (!inputArea) {
-      inputArea = document.createElement("div");
-      inputArea.classList.add("message-input-area");
+      // Save updated user back to DB
+      await this.#dbService.put(USERS_STORE, user);
 
-      this.#messageInput = document.createElement("input");
-      this.#messageInput.type = "text";
-      this.#messageInput.placeholder = "Type a message";
-
-      // Attach Button
-      this.#attachFileButton = document.createElement("button");
-      this.#attachFileButton.classList.add("attach-file-button");
-      this.#attachFileButton.type = "button"; // Prevent form submission
-      this.#attachFileButton.title = "Drag and Drop or Select File";
-      this.#attachFileButton.innerHTML = paperclipIconSVG; // Use SVG content
-
-      this.#sendMessageButton = document.createElement("button");
-      this.#sendMessageButton.textContent = "Send";
-      this.#sendMessageButton.type = "button"; // Good practice
-
-      inputArea.appendChild(this.#messageInput);
-      inputArea.appendChild(this.#attachFileButton); // Add paperclip before send
-      inputArea.appendChild(this.#sendMessageButton);
-
-      this.#conversationView.appendChild(inputArea);
-    } else {
-      this.#messageInput = inputArea.querySelector("input[type='text']");
-      this.#attachFileButton = inputArea.querySelector(".attach-file-button");
-      this.#sendMessageButton = inputArea.querySelector(
-        "button:not(.attach-file-button)"
+      // Update the DOM list item directly (more efficient than full re-render)
+      const listItem = this.#messagesListUL?.querySelector<HTMLElement>(
+        `.message-item[data-user-name="${userName}"]`
+      );
+      if (listItem) {
+        const previewEl = listItem.querySelector<HTMLParagraphElement>(
+          ".last-message-preview"
+        );
+        const availabilityEl =
+          listItem.querySelector<HTMLSpanElement>(".availability");
+        if (previewEl)
+          previewEl.textContent =
+            text.length > 30 ? text.substring(0, 27) + "..." : text;
+        if (availabilityEl)
+          availabilityEl.textContent = `${user.availability} • ${formatTimestamp(timestamp)}`;
+        // Move to top
+        if (
+          this.#messagesListUL &&
+          listItem !== this.#messagesListUL.firstChild
+        ) {
+          this.#messagesListUL.insertBefore(
+            listItem,
+            this.#messagesListUL.firstChild
+          );
+        }
+      } else {
+        // If item not found (e.g., due to search filter), trigger a full list re-render
+        await this.#renderUserList(this.#searchInput?.value ?? "");
+      }
+    } catch (error) {
+      console.error(
+        `Failed to update user store/preview for ${userName}:`,
+        error
       );
     }
   }
 
-  /**
-   * Adds a new message to the conversation view.
-   * @param message The message object to add.
-   */
-  #addMessageToView(message: Message) {
-    if (!this.#conversationView) return;
-    const messagesContainer = this.#conversationView.querySelector(
-      ".conversation-messages"
-    );
-    if (!messagesContainer) return;
+  /** Fetches and renders messages */
+  async #renderConversationMessages(selectedUser: User) {
+    if (!this.#conversationMessagesContainer) return;
+    this.#conversationMessagesContainer.innerHTML = "";
+    try {
+      const messages = await this.#getMessagesForChat(selectedUser.name);
+      if (messages.length === 0)
+        this.#showConversationPlaceholder(
+          `No messages with ${selectedUser.name}.`
+        );
+      else messages.forEach((msg) => this.#renderSingleMessageElement(msg));
+    } catch (error) {
+      this.#showConversationPlaceholder("Error loading messages.", true);
+    }
+    this.#scrollToBottom();
+  }
 
+  /** Renders a single message element (text or file) */
+  #renderSingleMessageElement(message: Message) {
+    if (!this.#conversationMessagesContainer) return;
     const messageWrapper = document.createElement("div");
     messageWrapper.classList.add("message-wrapper");
-
     const messageDiv = document.createElement("div");
-    messageDiv.classList.add("message");
-    if (message.sender === "You") {
-      messageDiv.classList.add("sent");
+    messageDiv.classList.add(
+      "message",
+      message.sender === "You" ? "sent" : "received"
+    );
+    // File display
+    if (message.file && message.fileName) {
+      messageDiv.classList.add("file-message");
+      const fileIcon = getFileIcon(message.fileType);
+      const fileLink = document.createElement("a");
+      fileLink.href = "#";
+      fileLink.dataset.messageId = message.id?.toString();
+      fileLink.innerHTML = `${fileIcon} <span>${message.fileName}</span> <small>(${(message.file.size / 1024).toFixed(1)} KB)</small>`;
+      fileLink.title = "Click to download";
+      fileLink.addEventListener("click", this.#handleDownloadClick); // Use central handler
+      messageDiv.appendChild(fileLink);
     } else {
-      messageDiv.classList.add("received");
+      // Text display
+      const messageContent = document.createElement("p");
+      messageContent.textContent = message.text || "";
+      messageDiv.appendChild(messageContent);
     }
-
-    const messageContent = document.createElement("p");
-    messageContent.textContent = message.text;
-    messageDiv.appendChild(messageContent);
-
     const messageTime = document.createElement("span");
     messageTime.classList.add("message-time");
-    let timeText = "";
-    if (message.time && message.date) {
-      // Use locale specific formats
-      timeText = `${message.time}, ${message.date}`;
-    } else if (message.time) {
-      timeText = message.time;
-    } else if (message.date) {
-      timeText = message.date;
-    }
-    messageTime.textContent = timeText;
-
+    messageTime.textContent = formatTimestamp(message.timestamp); // Use full format util
     messageWrapper.appendChild(messageDiv);
     messageWrapper.appendChild(messageTime);
-    messagesContainer.appendChild(messageWrapper);
-
-    // Scroll to the bottom to show the new message
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    this.#conversationMessagesContainer.appendChild(messageWrapper);
   }
 
-  /**
-   * Attaches event listeners to the interactive elements of the chat page,
-   * such as the send message button and message input field.
-   */
-  #attachEventListeners() {
-    // Send message on button click
-    if (this.#sendMessageButton) {
-      this.#sendMessageButton.addEventListener("click", () =>
-        this.#sendMessage()
+  /** Central handler for download clicks */
+  #handleDownloadClick = async (event: Event) => {
+    event.preventDefault();
+    const target = event.currentTarget as HTMLElement;
+    const messageIdStr = target.dataset.messageId;
+    if (messageIdStr) {
+      const messageId = parseInt(messageIdStr, 10);
+      await this.#downloadFile(messageId); // Call download logic
+    }
+  };
+
+  /** Logic to download the file */
+  async #downloadFile(messageId: number): Promise<void> {
+    try {
+      const message = await this.#dbService.get<Message>(
+        MESSAGES_STORE,
+        messageId
       );
-    }
-
-    // Send message on Enter key press in the input field
-    if (this.#messageInput) {
-      this.#messageInput.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault(); // Prevent default form submission or line break
-          this.#sendMessage();
-        }
-      });
-    }
-
-    if (this.#attachFileButton) {
-      this.#attachFileButton.addEventListener("click", () => {
-        console.log("Attach file button clicked");
-        // TODO: Implement Drag and Drop logic
-      });
-    }
-
-    if (this.#searchInput) {
-      this.#searchInput.addEventListener("input", (event) => {
-        const searchTerm = (event.target as HTMLInputElement).value;
-        console.log("Search term:", searchTerm);
-        // TODO: Implement search/filter logic
-      });
+      if (message?.file && message.fileName) {
+        const url = URL.createObjectURL(message.file);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = message.fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+        a.remove();
+      } else {
+        throw new Error("File data missing.");
+      }
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Could not download file.");
     }
   }
 
-  /**
-   * Sends the message currently typed in the input field.
-   */
-  #sendMessage() {
-    if (
-      this.#messageInput &&
-      this.#messageInput.value.trim() &&
-      this.#cur_user
-    ) {
-      const now = new Date();
-      const newMessage: Message = {
-        sender: "You",
-        text: this.#messageInput.value.trim(),
-        time: now.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
-        date: now.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
-      };
+  /** Updates conversation header */
+  #updateConversationHeader(userName: string) {
+    if (!this.#conversationHeader) return;
+    this.#conversationHeader.innerHTML = "";
+    const userNameElement = document.createElement("h2");
+    userNameElement.textContent = userName;
+    const responseTime = document.createElement("p"); // Restored response time
+    responseTime.classList.add("response-time");
+    responseTime.textContent =
+      userName !== "Select a chat" ? "Response time : 1 hour" : "";
+    this.#conversationHeader.appendChild(userNameElement);
+    this.#conversationHeader.appendChild(responseTime);
+  }
 
-      // Add the message to the UI
-      this.#addMessageToView(newMessage);
+  /** Shows placeholder message */
+  #showConversationPlaceholder(text: string, isError: boolean = false): void {
+    if (!this.#conversationMessagesContainer) return;
+    const placeholder = document.createElement("p");
+    placeholder.textContent = text;
+    placeholder.classList.add("conversation-placeholder");
+    if (isError) placeholder.classList.add("error-message");
+    this.#conversationMessagesContainer.innerHTML = "";
+    this.#conversationMessagesContainer.appendChild(placeholder);
+  }
 
-      // Clear the input field
-      this.#messageInput.value = "";
-    }
+  /** Scrolls message container down */
+  #scrollToBottom() {
+    if (this.#conversationMessagesContainer)
+      this.#conversationMessagesContainer.scrollTop =
+        this.#conversationMessagesContainer.scrollHeight;
+  }
+
+  // Data Logic (using Service)
+  async #getMessagesForChat(userName: string): Promise<Message[]> {
+    const toUserQuery = IDBKeyRange.only([userName]);
+    const fromUserQuery = IDBKeyRange.only([userName]);
+    const messagesToUser = await this.#dbService.queryIndex<Message>(
+      MESSAGES_STORE,
+      "receiverTimestampIdx",
+      toUserQuery
+    );
+    const messagesFromUser = await this.#dbService.queryIndex<Message>(
+      MESSAGES_STORE,
+      "senderTimestampIdx",
+      fromUserQuery
+    );
+    const allMessages = [...messagesToUser, ...messagesFromUser];
+    allMessages.sort((a, b) => a.timestamp - b.timestamp);
+    return allMessages;
+  }
+  async #saveMessageToDB(message: Message): Promise<Message> {
+    const savedKey = await this.#dbService.put<Message>(
+      MESSAGES_STORE,
+      message
+    );
+    return { ...message, id: savedKey as number };
   }
 }

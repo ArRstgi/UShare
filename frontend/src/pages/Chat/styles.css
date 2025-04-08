@@ -2,72 +2,69 @@
 .messages-page {
   display: flex;
   width: 100%;
-  height: auto; /* Adjust height for content */
-  min-height: 90vh; /* Ensure at least 90% of viewport height */
+  height: auto;
+  min-height: 90vh;
   box-sizing: border-box;
   padding: 0;
-  flex-direction: column; /* Stack elements vertically by default for mobile */
-  background-color: #fff; /* Added a base background */
+  flex-direction: column;
+  background-color: #fff;
 }
 
 /* Messages List (Left Side) */
 .messages-list {
-  width: 100%; /* Take full width on mobile */
+  width: 100%;
   background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6; /* Move border to bottom on mobile */
+  border-bottom: 1px solid #dee2e6;
   padding: 15px;
   box-sizing: border-box;
   overflow-y: auto;
-  order: 1; /* Ensure it appears before conversation view in default mobile layout */
-  display: flex; /* Use flexbox for column layout */
-  flex-direction: column; /* Stack title, search, list vertically */
+  order: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .messages-list h2 {
   margin-top: 0;
-  /* Removed bottom margin, handled by search bar margin */
   margin-bottom: 0;
-  font-size: 1.1rem; /* Slightly smaller font for mobile */
+  font-size: 1.1rem;
   color: #495057;
-  text-align: left; /* Align left */
-  padding-left: 5px; /* Slight indent */
+  text-align: left;
+  padding-left: 5px;
 }
 
 /* Search Bar */
 .messages-search-input {
   width: 100%;
   padding: 8px 12px;
-  /* Equal vertical spacing */
   margin-top: 15px;
   margin-bottom: 15px;
   border: 1px solid #ced4da;
-  /* Rounded corners */
   border-radius: 20px;
-  box-sizing: border-box; /* Include padding and border in the element's total width */
+  box-sizing: border-box;
   font-size: 0.9rem;
   outline: none;
 }
 .messages-search-input:focus {
   border-color: #86b7fe;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25); /* Bootstrap-like focus */
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
 .messages-list ul {
   list-style: none;
   padding: 0;
   margin: 0;
-  flex-grow: 1; /* Allow list to take remaining space */
-  overflow-y: auto; /* Enable scrolling for the list itself if needed */
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
 .message-item {
   display: flex;
-  align-items: center; /* Vertically center avatar and info */
+  align-items: center;
   padding: 10px 15px;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  margin-bottom: 5px; /* Slightly reduced margin */
+  margin-bottom: 5px;
   text-align: left;
 }
 
@@ -76,24 +73,25 @@
 }
 
 .message-item.active {
-  background-color: #000000; /* Black background for active */
+  background-color: #000000;
   color: white;
 }
 
 .message-item.active .user-name,
+.message-item.active .last-message-preview, /* Style preview text */
 .message-item.active .availability {
-  color: white; /* Ensure text is white on active */
+  color: white;
 }
 
 .message-item.active .user-avatar {
-  background-color: #495057; /* Darker grey for avatar background when active */
+  background-color: #495057;
   color: white;
 }
 
 .user-avatar {
   width: 35px;
   height: 35px;
-  min-width: 35px; /* Prevent shrinking */
+  min-width: 35px;
   border-radius: 50%;
   background-color: #ced4da;
   color: #495057;
@@ -109,7 +107,7 @@
 .user-info {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden; /* Prevent content from overflowing */
   flex-grow: 1;
 }
 
@@ -122,7 +120,16 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  text-align: left;
+}
+
+/* Last Message Preview Style */
+.last-message-preview {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin: 0 0 2px 0; /* Adjust spacing */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .availability {
@@ -131,23 +138,36 @@
   text-align: left;
 }
 
+
 /* Conversation View (Right Side) */
 .conversation-view {
   flex-grow: 1;
-  padding: 0; /* Remove padding here, add to inner elements */
+  padding: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  order: 2; /* Ensure it appears after messages list in default mobile layout */
-  height: calc(90vh - 60px);
+  order: 2;
+  height: calc(90vh - 60px); /* Adjust based on actual header/footer */
   min-height: 300px;
+   position: relative; /* Needed for absolute positioning of potential drop overlay */
 }
+
+/* Drag over effect */
+.conversation-view.drag-over {
+    outline: 3px dashed #0d6efd;
+    outline-offset: -10px; /* Position inside the padding */
+    background-color: rgba(13, 110, 253, 0.05); /* Subtle background hint */
+}
+
 
 .conversation-header {
   padding: 15px;
   border-bottom: 1px solid #dee2e6;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Prevent header from shrinking */
+  background-color: #fff; /* Ensure header has background */
+  z-index: 1; /* Keep header above messages during scroll */
 }
+
 
 .conversation-header h2 {
   margin-top: 0;
@@ -163,17 +183,26 @@
 }
 
 .conversation-messages {
-  flex-grow: 1;
-  overflow-y: auto;
+  flex-grow: 1; /* Take available space */
+  overflow-y: auto; /* Enable scrolling for messages */
   padding: 15px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 5px; /* Spacing between message wrappers */
+}
+
+/* Placeholder text style */
+.conversation-placeholder {
+    text-align: center;
+    color: #6c757d;
+    margin-top: 20px;
+    font-style: italic;
 }
 
 .message-wrapper {
   display: flex;
   flex-direction: column;
+  max-width: 90%; /* Prevent wrapper from taking full width */
 }
 
 .message {
@@ -181,7 +210,7 @@
   color: #343a40;
   padding: 10px 15px;
   border-radius: 18px;
-  max-width: 90%;
+  /* Removed max-width here, apply to wrapper */
   word-break: break-word;
   text-align: left;
   font-size: 0.9rem;
@@ -192,35 +221,85 @@
   margin: 0;
 }
 
+/* File Message Styling */
+.message.file-message {
+    background-color: #f8f9fa; /* Slightly different background */
+    border: 1px solid #dee2e6;
+}
+
+.message.file-message a {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between icon, text, size */
+    color: #0d6efd; /* Link color */
+    text-decoration: none;
+}
+.message.file-message a:hover {
+    text-decoration: underline;
+}
+.message.file-message a span {
+    flex-grow: 1; /* Allow filename to take space */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.message.file-message a small {
+    color: #6c757d;
+    flex-shrink: 0; /* Prevent size from wrapping */
+}
+
+
 .message.sent {
   background-color: #000000;
   color: white;
-  align-self: flex-end;
+  /* align-self applied to wrapper */
   border-radius: 18px;
 }
 
+/* Override file message style for sent files */
+.message.sent.file-message {
+    background-color: #343a40; /* Darker background for sent files */
+    border: 1px solid #495057;
+}
+.message.sent.file-message a {
+    color: #adb5bd; /* Lighter link color on dark */
+}
+.message.sent.file-message a:hover {
+    color: #dee2e6;
+}
+.message.sent.file-message a small {
+    color: #adb5bd;
+}
+
+
 .message.received {
-  align-self: flex-start;
+  /* align-self applied to wrapper */
   background-color: #f1f0f0;
   color: #000;
   border-radius: 18px;
 }
+/* File message style for received files (already covered by default .file-message) */
+
 
 .message-time {
   font-size: 0.65rem;
   color: #6c757d;
   margin-top: 3px;
   padding: 0 5px;
+  /* Alignment handled by wrapper */
 }
 
-/* Align time correctly under the corresponding bubble */
+/* Align wrapper (and thus bubble + time) correctly */
 .message-wrapper:has(.message.sent) {
-  align-items: flex-end;
+  align-self: flex-end; /* Push wrapper to the right */
+  align-items: flex-end; /* Align time under the right edge */
 }
 
 .message-wrapper:has(.message.received) {
-  align-items: flex-start;
+  align-self: flex-start; /* Push wrapper to the left */
+  align-items: flex-start; /* Align time under the left edge */
 }
+
 
 /* Message Input Area */
 .message-input-area {
@@ -229,12 +308,12 @@
   padding: 10px 15px;
   border-top: 1px solid #dee2e6;
   background-color: #f8f9fa;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Prevent input area from shrinking */
 }
 
+
 .message-input-area input[type="text"] {
-  /* Reduce grow factor to give more space to buttons */
-  flex-grow: 0.8;
+  flex-grow: 1; /* Take up most space */
   padding: 10px 15px;
   border: 1px solid #ced4da;
   border-radius: 20px;
@@ -262,10 +341,11 @@
   color: #6c757d;
   border-radius: 15px;
   transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-  flex-shrink: 0;
+	background-color 0.2s ease,
+	color 0.2s ease;
+  flex-shrink: 0; /* Prevent button from shrinking */
 }
+
 
 .attach-file-button:hover {
   background-color: #e2e6ea;
@@ -277,8 +357,8 @@
   height: 20px;
 }
 
+/* Send Button */
 .message-input-area button:not(.attach-file-button) {
-  /* Style Send button */
   background-color: #000000;
   color: white;
   border: none;
@@ -288,8 +368,9 @@
   cursor: pointer;
   transition: background-color 0.3s ease;
   font-weight: 500;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Prevent button from shrinking */
 }
+
 
 .message-input-area button:not(.attach-file-button):hover {
   background-color: #333;
@@ -298,131 +379,143 @@
 /* Media query for larger screens (e.g., tablets and desktops) */
 @media (min-width: 768px) {
   .messages-page {
-    flex-direction: row;
-    height: 90vh;
+	flex-direction: row; /* Side-by-side layout */
+	height: 90vh; /* Fixed height */
   }
 
   .messages-list {
-    width: 300px;
-    min-width: 300px;
-    border-right: 1px solid #dee2e6;
-    border-bottom: none;
-    order: 0;
-    height: 100%;
+	width: 300px; /* Fixed width for sidebar */
+	min-width: 300px;
+	border-right: 1px solid #dee2e6;
+	border-bottom: none; /* Remove bottom border */
+	order: 0; /* Ensure list is on the left */
+	height: 100%; /* Full height of parent */
   }
 
   .conversation-view {
-    order: 0;
-    height: 100%;
+	order: 0; /* Ensure conversation is on the right */
+	height: 100%; /* Full height of parent */
+    /* Remove height calc */
   }
 
   .messages-list h2 {
-    font-size: 1.2rem;
+	font-size: 1.2rem;
   }
 
   .messages-search-input {
-    font-size: 1rem;
+	font-size: 1rem;
   }
 
   .conversation-header h2 {
-    font-size: 1.2rem;
+	font-size: 1.2rem;
+  }
+
+  .message-wrapper {
+    max-width: 70%; /* Allow messages to be wider */
   }
 
   .message {
-    max-width: 70%;
-    font-size: 0.95rem;
+	font-size: 0.95rem;
   }
 
   .user-avatar {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    font-size: 1rem;
+	width: 40px;
+	height: 40px;
+	min-width: 40px;
+	font-size: 1rem;
   }
 
   .user-name {
-    font-size: 1rem;
+	font-size: 1rem;
   }
-
+ .last-message-preview {
+     font-size: 0.85rem;
+ }
   .availability {
-    font-size: 0.8rem;
+	font-size: 0.8rem;
   }
 
   .message-input-area input[type="text"] {
-    font-size: 1rem;
-    flex-grow: 1;
-    margin-right: 10px;
+	font-size: 1rem;
+	margin-right: 10px;
   }
 
   .attach-file-button {
-    padding: 8px 16px;
-    margin-right: 10px;
+	padding: 8px 16px;
+	margin-right: 10px;
   }
 
   .message-input-area button:not(.attach-file-button) {
-    font-size: 1rem;
+	font-size: 1rem;
   }
 }
 
 /* Further adjustments for very small screens*/
 @media (max-width: 480px) {
   .messages-list {
-    padding: 10px;
+	padding: 10px;
   }
 
   .messages-search-input {
-    padding: 6px 10px;
-    font-size: 0.85rem;
-    margin-top: 10px;
-    margin-bottom: 10px;
+	padding: 6px 10px;
+	font-size: 0.85rem;
+	margin-top: 10px;
+	margin-bottom: 10px;
   }
 
   .message-item {
-    padding: 8px 10px;
+	padding: 8px 10px;
   }
 
   .user-avatar {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    margin-right: 8px;
+	width: 30px;
+	height: 30px;
+	min-width: 30px;
+	margin-right: 8px;
   }
 
+    .last-message-preview {
+     font-size: 0.75rem;
+ }
+    .availability {
+     font-size: 0.65rem;
+ }
+
   .conversation-header {
-    padding: 10px;
+	padding: 10px;
   }
 
   .conversation-messages {
-    padding: 10px;
-    gap: 4px;
+	padding: 10px;
+	gap: 4px;
   }
 
   .message {
-    padding: 8px 12px;
-    font-size: 0.85rem;
+	padding: 8px 12px;
+	font-size: 0.85rem;
   }
 
   .message-input-area {
-    padding: 8px 10px;
+	padding: 8px 10px;
   }
 
   .message-input-area input[type="text"] {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    margin-right: 5px;
+	padding: 8px 12px;
+	font-size: 0.85rem;
+	margin-right: 5px;
   }
   .attach-file-button {
-    padding: 6px 10px;
-    margin-right: 5px;
-    border-radius: 12px;
+	padding: 6px 10px;
+	margin-right: 5px;
+	border-radius: 12px;
   }
   .attach-file-button svg {
-    width: 18px;
-    height: 18px;
+	width: 18px;
+	height: 18px;
   }
 
   .message-input-area button:not(.attach-file-button) {
-    padding: 8px 12px;
-    font-size: 0.85rem;
+	padding: 8px 12px;
+	font-size: 0.85rem;
   }
 }
