@@ -126,6 +126,9 @@ export class Matching extends BaseComponent {
         if (!db.objectStoreNames.contains("registration")) {
           db.createObjectStore("registration");
         }
+        if (!db.objectStoreNames.contains("reviews")) {
+          db.createObjectStore("reviews", { keyPath: "id", autoIncrement: true });
+        }
       };
   
       request.onsuccess = () => {
