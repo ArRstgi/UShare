@@ -371,27 +371,26 @@ export class UserProfilePage extends BaseComponent {
       }
     });
 
-    area.querySelector(".confirm-upload")?.addEventListener("click", (evt) => {
+    area.querySelector(".confirm-upload")?.addEventListener("click", async (evt) => {
       evt.stopPropagation();
-      this.loadTempPhoto()
-        .then((tempData) => {
-          if (tempData) {
-            const profilePhotoEl = this.#container?.querySelector(".profile-photo") as HTMLElement;
-            if (profilePhotoEl) {
-              profilePhotoEl.style.backgroundImage = `url(${tempData})`;
-            }
-            return this.saveFinalPhoto(tempData)
-              .then(() => this.deleteTempPhoto())
-              .then(() => {
-                this.#profilePhotoData = tempData;
-                alert("Photo uploaded and saved successfully!");
-                this.clearUploadArea(area);
-              });
-          } else {
-            alert("No photo found in temporary storage");
+      try {
+        const tempData = await this.loadTempPhoto();
+        if (tempData) {
+          const profilePhotoEl = this.#container?.querySelector(".profile-photo") as HTMLElement;
+          if (profilePhotoEl) {
+            profilePhotoEl.style.backgroundImage = `url(${tempData})`;
           }
-        })
-        .catch((err) => console.error("Error during confirm:", err));
+          await this.saveFinalPhoto(tempData);
+          await this.deleteTempPhoto();
+          this.#profilePhotoData = tempData;
+          alert("Photo uploaded and saved successfully!");
+          this.clearUploadArea(area);
+        } else {
+          alert("No photo found in temporary storage");
+        }
+      } catch (err) {
+        console.error("Error during confirm:", err);
+      }
     });
 
     area.querySelector(".cancel-upload")?.addEventListener("click", (evt) => {
