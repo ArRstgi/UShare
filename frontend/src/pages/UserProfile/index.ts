@@ -8,207 +8,117 @@ interface ProfileDetails {
 
 export class UserProfilePage extends BaseComponent {
   #container: HTMLElement | null = null;
-  #db?: IDBDatabase;
-  #profilePhotoData: string | null = null;
-  #uploadAreaVisible: boolean = false;
+  // TODO: replace this with real (per‑user) ID once we add authentication
+  #profileId = "1";
+
+  #profilePhotoUrl: string | null = null;
   #profileDetails: ProfileDetails = {
-    skillsTeach: "Music production, Singing, Badminton, Math",
-    skillsLearn: "Snowboarding, Skating, Juggling, Web Development",
-    availability: "Mondays - Fridays: 2:00 PM to 4:00 PM; Saturday - Sunday: 2:00 PM to 7:00 PM"
+    skillsTeach: "",
+    skillsLearn: "",
+    availability: ""
   };
-  #editDetailsMode: boolean = false;
+
+  #editDetailsMode = false;
+  #uploadAreaVisible = false;
+  #selectedFile: File | null = null;
 
   constructor() {
     super();
     this.loadCSS("src/pages/UserProfile", "styles");
-    this.initIndexedDB();
   }
 
-  
-  initIndexedDB() {
-    const request = indexedDB.open("UShareDB", 1);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains("userProfilePhoto")) {
-        db.createObjectStore("userProfilePhoto");
-      }
-      if (!db.objectStoreNames.contains("userProfileDetails")) {
-        db.createObjectStore("userProfileDetails");
-      }
-    };
-    request.onsuccess = () => {
-      this.#db = request.result;
-      this.loadFinalPhoto();
-      this.loadProfileDetails();
-    };
-    request.onerror = () => console.error("IndexedDB error:", request.error);
-  }
-
-  // Photo methods
-  loadFinalPhoto(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.#db) { reject("DB not initialized"); return; }
-      const tx = this.#db.transaction("userProfilePhoto", "readonly");
-      const store = tx.objectStore("userProfilePhoto");
-      const getRequest = store.get("userPhoto");
-      getRequest.onsuccess = () => {
-        if (getRequest.result) {
-          this.#profilePhotoData = getRequest.result;
-          const profilePhotoEl = this.#container?.querySelector(".profile-photo") as HTMLElement;
-          if (profilePhotoEl) {
-            profilePhotoEl.style.backgroundImage = `url(${this.#profilePhotoData})`;
-          }
-        }
-        resolve();
-      };
-      getRequest.onerror = () => reject(getRequest.error);
-    });
-  }
-
-  saveFinalPhoto(data: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.#db) { reject("DB not initialized"); return; }
-      const tx = this.#db.transaction("userProfilePhoto", "readwrite");
-      const store = tx.objectStore("userProfilePhoto");
-      const putRequest = store.put(data, "userPhoto");
-      putRequest.onsuccess = () => {
-        console.log("Final photo saved to IndexedDB");
-        resolve();
-      };
-      putRequest.onerror = () => reject(putRequest.error);
-    });
-  }
-
-  // Save temporary photo as soon as file is dropped/selected
-  saveTempPhoto(data: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.#db) { reject("DB not initialized"); return; }
-      const tx = this.#db.transaction("userProfilePhoto", "readwrite");
-      const store = tx.objectStore("userProfilePhoto");
-      const putRequest = store.put(data, "tempUserPhoto");
-      putRequest.onsuccess = () => {
-        console.log("Temp photo saved to IndexedDB.");
-        resolve();
-      };
-      putRequest.onerror = () => reject(putRequest.error);
-    });
-  }
-
-  loadTempPhoto(): Promise<string | null> {
-    return new Promise((resolve, reject) => {
-      if (!this.#db) { reject("DB not initialized"); return; }
-      const tx = this.#db.transaction("userProfilePhoto", "readonly");
-      const store = tx.objectStore("userProfilePhoto");
-      const getRequest = store.get("tempUserPhoto");
-      getRequest.onsuccess = () => {
-        resolve(getRequest.result || null);
-      };
-      getRequest.onerror = () => reject(getRequest.error);
-    });
-  }
-
-  deleteTempPhoto(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.#db) { reject("DB not initialized"); return; }
-      const tx = this.#db.transaction("userProfilePhoto", "readwrite");
-      const store = tx.objectStore("userProfilePhoto");
-      const deleteRequest = store.delete("tempUserPhoto");
-      deleteRequest.onsuccess = () => resolve();
-      deleteRequest.onerror = () => reject(deleteRequest.error);
-    });
-  }
-
-  // Profile Details methods
-  loadProfileDetails(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.#db) { reject("DB not initialized"); return; }
-      const tx = this.#db.transaction("userProfileDetails", "readonly");
-      const store = tx.objectStore("userProfileDetails");
-      const getRequest = store.get("profileDetails");
-      getRequest.onsuccess = () => {
-        if (getRequest.result) {
-          this.#profileDetails = getRequest.result;
-        }
-        resolve();
-        this.updateLeftContent();
-      };
-      getRequest.onerror = () => reject(getRequest.error);
-    });
-  }
-
-  saveProfileDetails(details: ProfileDetails): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.#db) { reject("DB not initialized"); return; }
-      const tx = this.#db.transaction("userProfileDetails", "readwrite");
-      const store = tx.objectStore("userProfileDetails");
-      const putRequest = store.put(details, "profileDetails");
-      putRequest.onsuccess = () => resolve();
-      putRequest.onerror = () => reject(putRequest.error);
-    });
-  }
-
-  // Render method
   render(): HTMLElement {
     if (this.#container) return this.#container;
     this.#container = document.createElement("div");
     this.#container.classList.add("user-profile-page");
     this.#setupContainerContent();
+    this.loadProfile();
     return this.#container;
   }
 
-  // Set up the main container content
+  // Fetch the profile from the Express backend
+  async loadProfile(): Promise<void> {
+    try {
+      const res = await fetch(`http://localhost:3000/profile/${this.#profileId}`);
+      // if it's not found, auto-create a brand‑new profile
+      if (res.status === 404) {
+        const createRes = await fetch(`http://localhost:3000/profile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            skillsTeach: "",
+            skillsLearn: "",
+            availability: ""
+          })
+        });
+        if (!createRes.ok) throw new Error(`Create failed ${createRes.status}`);
+        const created = await createRes.json();
+        // get real id
+        this.#profileId = created.id;
+        // reload with the fresh profile
+        return this.loadProfile();
+      }
+      if (!res.ok) throw new Error(`GET failed ${res.status}`);
+  
+      const data = await res.json();
+      this.#profileDetails = {
+        skillsTeach: data.skillsTeach,
+        skillsLearn: data.skillsLearn,
+        availability: data.availability
+      };
+      this.#profilePhotoUrl = data.photoUrl || null;
+      this.updateLeftContent();
+      this.updatePhoto();
+    } catch (err) {
+      console.error("Failed to load or create profile:", err);
+    }
+  }
+
+  updatePhoto() {
+    const el = this.#container?.querySelector(".profile-photo") as HTMLElement;
+    if (el && this.#profilePhotoUrl) {
+      el.style.backgroundImage = `url(${this.#profilePhotoUrl})`;
+    }
+  }
+
   #setupContainerContent() {
     if (!this.#container) return;
     this.#container.innerHTML = "";
 
     const header = document.createElement("header");
 
-    const mainContent = document.createElement("main");
-    mainContent.classList.add("main-content");
+    const main = document.createElement("main");
+    main.classList.add("main-content");
 
-    // Left content: profile details
-    const leftContent = document.createElement("div");
-    leftContent.classList.add("left-content");
-    leftContent.innerHTML = "";
-    leftContent.appendChild(this.createDetailsSection());
+    // Left: details
+    const left = document.createElement("div");
+    left.classList.add("left-content");
+    left.appendChild(this.createDetailsSection());
 
-    // Right content: photo and upload
-    const rightContent = document.createElement("div");
-    rightContent.classList.add("right-content");
+    // Right: photo + edit
+    const right = document.createElement("div");
+    right.classList.add("right-content");
 
-    const profilePhoto = document.createElement("div");
-    profilePhoto.classList.add("profile-photo");
-    if (this.#profilePhotoData) {
-      profilePhoto.style.backgroundImage = `url(${this.#profilePhotoData})`;
-    }
+    const photo = document.createElement("div");
+    photo.classList.add("profile-photo");
+    right.appendChild(photo);
 
-    const editPhotoButton = document.createElement("button");
-    editPhotoButton.classList.add("edit-button");
-    editPhotoButton.innerText = "Edit photo";
-    editPhotoButton.addEventListener("click", () => {
-      this.toggleUploadArea();
-    });
+    const editBtn = document.createElement("button");
+    editBtn.classList.add("edit-button");
+    editBtn.innerText = "Edit photo";
+    editBtn.addEventListener("click", () => this.toggleUploadArea());
+    right.appendChild(editBtn);
 
-    rightContent.appendChild(profilePhoto);
-    rightContent.appendChild(editPhotoButton);
+    // container for upload area (hidden by default)
+    const uploadContainer = document.createElement("div");
+    uploadContainer.classList.add("upload-area-container");
+    uploadContainer.style.display = "none";
+    right.appendChild(uploadContainer);
 
-    // Upload area container (initially hidden)
-    let uploadAreaContainer = this.#container.querySelector(".upload-area-container") as HTMLElement;
-    if (!uploadAreaContainer) {
-      uploadAreaContainer = document.createElement("div");
-      uploadAreaContainer.classList.add("upload-area-container");
-      uploadAreaContainer.style.display = "none";
-      rightContent.appendChild(uploadAreaContainer);
-    }
-
-    mainContent.appendChild(leftContent);
-    mainContent.appendChild(rightContent);
-
-    this.#container.appendChild(header);
-    this.#container.appendChild(mainContent);
+    main.append(left, right);
+    this.#container.append(header, main);
   }
 
-  // Create the left panel details section (view or edit mode)
   createDetailsSection(): HTMLElement {
     const section = document.createElement("div");
     section.classList.add("profile-details");
@@ -230,12 +140,13 @@ export class UserProfilePage extends BaseComponent {
           <p>${this.#profileDetails.availability}</p>
         </div>
       `;
-      const editBtn = document.createElement("button");
-      editBtn.innerText = "Edit Details";
-      editBtn.addEventListener("click", () => {
-        this.toggleEditDetails();
+      const btn = document.createElement("button");
+      btn.innerText = "Edit Details";
+      btn.addEventListener("click", () => {
+        this.#editDetailsMode = true;
+        this.updateLeftContent();
       });
-      section.appendChild(editBtn);
+      section.appendChild(btn);
     } else {
       section.innerHTML = `
         <h1>Edit Profile Details</h1>
@@ -252,206 +163,168 @@ export class UserProfilePage extends BaseComponent {
           <input type="text" id="availability" value="${this.#profileDetails.availability}" />
         </div>
       `;
-      const saveBtn = document.createElement("button");
-      saveBtn.innerText = "Save";
-      saveBtn.addEventListener("click", () => {
-        const skillsTeach = (section.querySelector("#skillsTeach") as HTMLInputElement).value;
-        const skillsLearn = (section.querySelector("#skillsLearn") as HTMLInputElement).value;
-        const availability = (section.querySelector("#availability") as HTMLInputElement).value;
-        const updatedDetails: ProfileDetails = { skillsTeach, skillsLearn, availability };
-        this.saveProfileDetails(updatedDetails)
-          .then(() => {
-            this.#profileDetails = updatedDetails;
-            this.#editDetailsMode = false;
-            this.updateLeftContent();
-            alert("Profile details updated successfully!");
-          })
-          .catch((err) => console.error("Error saving details:", err));
-      });
-      section.appendChild(saveBtn);
-      const cancelBtn = document.createElement("button");
-      cancelBtn.innerText = "Cancel";
-      cancelBtn.addEventListener("click", () => {
+      const save = document.createElement("button");
+      save.innerText = "Save";
+      save.addEventListener("click", () => this.handleSaveDetails(section));
+      const cancel = document.createElement("button");
+      cancel.innerText = "Cancel";
+      cancel.addEventListener("click", () => {
         this.#editDetailsMode = false;
         this.updateLeftContent();
       });
-      section.appendChild(cancelBtn);
+      section.append(save, cancel);
     }
+
     return section;
   }
 
-  toggleEditDetails() {
-    this.#editDetailsMode = true;
-    this.updateLeftContent();
-  }
-
   updateLeftContent() {
-    const leftContent = this.#container?.querySelector(".left-content") as HTMLElement;
-    if (leftContent) {
-      leftContent.innerHTML = "";
-      leftContent.appendChild(this.createDetailsSection());
+    const left = this.#container?.querySelector(".left-content") as HTMLElement;
+    if (left) {
+      left.innerHTML = "";
+      left.appendChild(this.createDetailsSection());
     }
   }
 
+  async handleSaveDetails(section: HTMLElement) {
+    const skillsTeach = (section.querySelector("#skillsTeach") as HTMLInputElement).value;
+    const skillsLearn = (section.querySelector("#skillsLearn") as HTMLInputElement).value;
+    const availability = (section.querySelector("#availability") as HTMLInputElement).value;
 
-  // Toggle the upload area visibility; if showing, create fresh upload area
+    try {
+      const res = await fetch(`http://localhost:3000/profile/${this.#profileId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skillsTeach, skillsLearn, availability })
+      });
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      const updated = await res.json();
+      this.#profileDetails = {
+        skillsTeach: updated.skillsTeach,
+        skillsLearn: updated.skillsLearn,
+        availability: updated.availability
+      };
+      this.#editDetailsMode = false;
+      this.updateLeftContent();
+      alert("Profile details updated");
+    } catch (err) {
+      console.error("Failed to save details:", err);
+      alert("Could not save profile details");
+    }
+  }
+
   toggleUploadArea() {
-    let container = this.#container?.querySelector(".upload-area-container") as HTMLElement;
-    if (!container) {
-      container = document.createElement("div");
-      container.classList.add("upload-area-container");
-      container.style.display = "block";
-      const rightContent = this.#container?.querySelector(".right-content");
-      if (rightContent) {
-        rightContent.appendChild(container);
-      }
-      container.appendChild(this.createUploadArea());
-      this.#uploadAreaVisible = true;
+    const container = this.#container!.querySelector(
+      ".upload-area-container"
+    ) as HTMLElement;
+    if (this.#uploadAreaVisible) {
+      container.style.display = "none";
     } else {
-      this.#uploadAreaVisible = !this.#uploadAreaVisible;
-      if (this.#uploadAreaVisible) {
-        container.innerHTML = "";
-        container.style.display = "block";
-        container.appendChild(this.createUploadArea());
-      } else {
-        container.style.display = "none";
-      }
+      container.style.display = "block";
+      container.innerHTML = "";
+      container.appendChild(this.createUploadArea());
     }
+    this.#uploadAreaVisible = !this.#uploadAreaVisible;
   }
 
-  // Create the drag-and-drop upload area with preview and confirmation
   createUploadArea(): HTMLElement {
     const area = document.createElement("div");
     area.classList.add("upload-area");
     area.innerHTML = `
-      <p>Drag and drop your photo here, or click to select a file.</p>
-      <div class="preview-container" style="display: none;">
-        <img class="preview-image" src="" alt="Preview" style="max-width:100%; max-height:300px;"/>
+      <p>Drag & drop your photo here or click to select</p>
+      <div class="preview-container" style="display:none;">
+        <img class="preview-image" alt="Preview" style="max-width:100%;max-height:300px;"/>
         <div class="preview-buttons">
           <button class="confirm-upload">Confirm</button>
           <button class="cancel-upload">Cancel</button>
         </div>
       </div>
     `;
-
+  
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "image/*";
     fileInput.style.display = "none";
     area.appendChild(fileInput);
-
-    area.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === "P" || target.classList.contains("upload-area")) {
-        fileInput.click();
-      }
-    });
-
-    area.addEventListener("dragover", (e) => {
+  
+    
+    area.addEventListener("click", () => fileInput.click());
+  
+    // drag feedback
+    area.addEventListener("dragover", e => {
       e.preventDefault();
       area.classList.add("drag-over");
     });
-    area.addEventListener("dragleave", (e) => {
+    area.addEventListener("dragleave", e => {
       e.preventDefault();
       area.classList.remove("drag-over");
     });
-    area.addEventListener("drop", (e) => {
+    area.addEventListener("drop", e => {
       e.preventDefault();
       area.classList.remove("drag-over");
-      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-        const file = e.dataTransfer.files[0];
-        this.processFile(file, area);
-      }
+      if (e.dataTransfer?.files[0]) this.processFile(e.dataTransfer.files[0], area);
     });
-
-    fileInput.addEventListener("change", (e: Event) => {
-      const target = e.target as HTMLInputElement;
-      if (target.files && target.files.length > 0) {
-        this.processFile(target.files[0], area);
-      }
+  
+    // when you pick a file via the picker
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files?.[0]) this.processFile(fileInput.files[0], area);
     });
-
-    area.querySelector(".confirm-upload")?.addEventListener("click", async (evt) => {
+  
+    // confirm button: STOP the click from bubbling back up to 'area'
+    const confirmBtn = area.querySelector(".confirm-upload")!;
+    confirmBtn.addEventListener("click", evt => {
       evt.stopPropagation();
-      try {
-        const tempData = await this.loadTempPhoto();
-        if (tempData) {
-          const profilePhotoEl = this.#container?.querySelector(".profile-photo") as HTMLElement;
-          if (profilePhotoEl) {
-            profilePhotoEl.style.backgroundImage = `url(${tempData})`;
-          }
-          await this.saveFinalPhoto(tempData);
-          await this.deleteTempPhoto();
-          this.#profilePhotoData = tempData;
-          alert("Photo uploaded and saved successfully!");
-          this.clearUploadArea(area);
-        } else {
-          alert("No photo found in temporary storage");
-        }
-      } catch (err) {
-        console.error("Error during confirm:", err);
-      }
+      this.handleUploadConfirm(area);
     });
-
-    area.querySelector(".cancel-upload")?.addEventListener("click", (evt) => {
+  
+    // cancel button: likewise stop propagation
+    const cancelBtn = area.querySelector(".cancel-upload")!;
+    cancelBtn.addEventListener("click", evt => {
       evt.stopPropagation();
-      this.deleteTempPhoto()
-        .then(() => {
-          this.clearUploadArea(area);
-        })
-        .catch((err) => console.error("Error during cancel:", err));
+      this.clearUploadArea(area);
     });
-
+  
     return area;
   }
 
-  //save it immediately as temporary data and update preview using the stored value
   processFile(file: File, area: HTMLElement) {
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file");
+    this.#selectedFile = file;
+    const previewC = area.querySelector(".preview-container") as HTMLElement;
+    const img = area.querySelector(".preview-image") as HTMLImageElement;
+    img.src = URL.createObjectURL(file);
+    previewC.style.display = "block";
+  }
+
+  async handleUploadConfirm(area: HTMLElement) {
+    if (!this.#selectedFile) {
+      alert("No file chosen");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      this.saveTempPhoto(result)
-        .then(() => this.loadTempPhoto())
-        .then((tempData) => {
-          if (tempData) {
-            const previewContainer = area.querySelector(".preview-container") as HTMLElement;
-            const previewImage = area.querySelector(".preview-image") as HTMLImageElement;
-            if (previewContainer && previewImage) {
-              previewImage.src = tempData;
-              previewContainer.style.display = "block";
-            }
-          }
-        })
-        .catch((err) => console.error("Error processing file:", err));
-    };
-    reader.readAsDataURL(file);
+    const fd = new FormData();
+    fd.append("photo", this.#selectedFile);
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/profile/${this.#profileId}/photo`,
+        { method: "POST", body: fd }
+      );
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      const data = await res.json();
+      this.#profilePhotoUrl = data.photoUrl;
+      this.updatePhoto();
+      alert("Photo uploaded");
+      this.clearUploadArea(area);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Could not upload photo");
+    }
   }
 
-  // Clear preview and hide the upload area
   clearUploadArea(area: HTMLElement) {
-    const previewContainer = area.querySelector(".preview-container") as HTMLElement;
-    if (previewContainer) {
-      previewContainer.style.display = "none";
-      const previewImage = area.querySelector(".preview-image") as HTMLImageElement;
-      if (previewImage) previewImage.src = "";
-    }
-    const container = area.closest(".upload-area-container") as HTMLElement;
-    if (container) {
-      container.style.display = "none";
-    }
-    this.#uploadAreaVisible = false;
-  }
-
-  // Simulate asynchronous upload
-  simulatePhotoUpload(data: string): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 1000);
-    });
+    this.#selectedFile = null;
+    const p = area.querySelector(".preview-container") as HTMLElement;
+    p.style.display = "none";
+    (p.querySelector(".preview-image") as HTMLImageElement).src = "";
+    this.toggleUploadArea();
   }
 }
