@@ -17,6 +17,7 @@ Team Member List:
       - UI DESIGN: User Profile Screen and Login/Sign-Up Page
       - DATA DESIGN: User Data Structure
       - TEAM DESIGN: Project Manager
+      - SERVER SIDE: User Profile API
 - Teerat Chanromyen
   - Role Name: Meeting Coordinator
   - Issues to work on:
