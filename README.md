@@ -10,6 +10,8 @@ Milestone 4 Slides: https://docs.google.com/presentation/d/1OdzEit2FyDQR0cfcLaHQ
 
 Milestone 5 Slides: https://docs.google.com/presentation/d/1TJpVEVYcDdQLvXY2qz2p1xP3Usn_ZMu-VdqhRwoBMIw/edit?usp=sharing
 
+Milestone 6 Slides: https://docs.google.com/presentation/d/11u6jfDuIeLq5Ind_ElIC_KJ_Ar6J4sbGlCtuzi2F9QU/edit?usp=sharing
+
 Team Member List:
 - Michael Ye
   - Role Name: Project Manager
