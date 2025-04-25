@@ -1,5 +1,6 @@
 import express from "express";
 import profileRoutes from "../routes/profileRoutes";
+import matchingRoutes from "../routes/MatchingRoutes";
 import path from "path";
 import multer from "multer";
 import cors from "cors";
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/profile", profileRoutes);  
+app.use("/matching", matchingRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

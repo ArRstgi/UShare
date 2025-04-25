@@ -10,156 +10,75 @@ export class Matching extends BaseComponent {
     this.#initIndexedDB();
   }
 
-
   #initIndexedDB() {
-
-    const dummyData = [
-      {
-        id: 1,
-        username: "SwimPro",
-        description: "Hi, I'm a former NCAA Division I competitive swimmer with over 8 years of experience in the pool. I now offer private swimming lessons tailored to all age groups and skill levels—from water safety basics for kids to advanced technique refinement for adults. I specialize in freestyle and butterfly strokes and focus on building confidence, improving form, and boosting endurance through personalized training sessions.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 2,
-        username: "MathTutor_42",
-        description: "With a PhD in Mathematics and over 10 years of tutoring experience, I provide comprehensive support for high school and college-level math courses. Whether you need help understanding algebraic concepts, solving calculus problems, or analyzing data in statistics, I tailor each session to your learning style. I’ve helped countless students boost their grades and gain confidence in their math skills.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 3,
-        username: "GuitarMaster",
-        description: "I'm a professional guitarist and music teacher with more than a decade of experience helping students of all ages master the instrument. My lessons cover everything from the basics of finger placement and rhythm to advanced soloing and improvisation. Whether you're looking to strum your favorite pop songs or dive deep into music theory, I’ll help you hit the right notes—literally!",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 4,
-        username: "YogaWithMe",
-        description: "As a certified yoga instructor trained in Hatha and Vinyasa styles, I offer virtual and in-person yoga sessions focused on flexibility, balance, and mental clarity. My classes are beginner-friendly and emphasize mindfulness and breathwork. I aim to create a peaceful space where you can unwind, stretch your limits (literally and figuratively), and reconnect with your body and mind.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 5,
-        username: "SpanishTutor",
-        description: "¡Hola! I'm a native Spanish speaker with over 6 years of tutoring experience. I offer engaging and interactive lessons for learners of all levels. From casual conversational practice to intensive grammar drills and pronunciation coaching, I customize lessons to help you build real-world fluency and confidence in speaking Spanish.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 6,
-        username: "CodeMentor",
-        description: "I'm a senior software engineer with over 7 years of industry experience, currently working at a major tech company. I specialize in teaching practical programming skills in JavaScript and Python through project-based learning. Whether you're building your first app or preparing for technical interviews, I can help you master coding fundamentals and real-world development workflows.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 7,
-        username: "ChefBaker",
-        description: "Bonjour! I’m a professional pastry chef trained in classic French techniques. I offer baking classes that range from beginner-friendly cookies and muffins to artisan breads and elegant plated desserts. Whether you're preparing for a bake-off or just love creating sweet treats, I’ll help you level up your baking game with hands-on instruction and plenty of delicious tips.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 8,
-        username: "ArtTeacher",
-        description: "I hold an MFA in Fine Arts and have taught drawing and painting for over 12 years. My classes focus on building foundational skills in pencil, charcoal, acrylic, and oil painting. Whether you're just picking up a brush or prepping your portfolio for art school, I provide thoughtful feedback and personalized guidance to help your artistic vision come to life.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 9,
-        username: "PianoLessons",
-        description: "I'm a classically trained pianist with over 15 years of teaching experience. I offer lessons for both children and adults, focusing on technique, sight-reading, and music theory. I believe learning piano should be fun and enriching, and I tailor each lesson to the student's goals—whether you're aiming to play Beethoven or just want to accompany your favorite songs.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 10,
-        username: "ScienceTutor",
-        description: "As a certified high school science teacher with a master's degree in education, I offer tutoring in Biology, Chemistry, and Physics. I specialize in helping students understand complex scientific concepts and prepare effectively for exams such as the SAT, AP, and IB. My sessions are interactive and focused on building both knowledge and confidence.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 11,
-        username: "PhotographyPro",
-        description: "I’m a full-time professional photographer with over a decade of experience shooting portraits, landscapes, and commercial projects. I offer hands-on photography classes covering DSLR camera basics, composition techniques, natural and studio lighting, and post-processing. Whether you're a beginner or looking to go pro, my sessions will help you take your photography to the next level.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 12,
-        username: "FrenchCoach",
-        description: "Bonjour! I'm originally from Paris and have been teaching French as a second language for over 8 years. My lessons blend formal instruction with casual conversation practice, making them perfect for travelers, students, or anyone looking to immerse themselves in French culture. You'll gain confidence in speaking, listening, and pronunciation in no time!",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 13,
-        username: "FitnessTrainer",
-        description: "I'm a NASM-certified personal trainer with a focus on strength training, muscle toning, and functional fitness. Whether you're new to the gym or looking to optimize your workout plan, I create personalized programs that align with your fitness goals. I also provide nutrition tips and progress tracking to help you stay on target and feel your best.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 14,
-        username: "HistoryBuff",
-        description: "I’m a college professor with a PhD in History, specializing in American and World History. I offer tutoring for students from middle school through college, helping them understand historical contexts, analyze primary sources, and write compelling essays. My sessions also include tips for studying effectively and preparing for standardized exams.",
-        image: "src/assets/swimmer.jpg"
-      },
-      {
-        id: 15,
-        username: "DanceInstructor",
-        description: "I’m a professional dancer with a background in contemporary, jazz, and ballet. I've performed on international stages and now teach dance to students of all levels. Whether you're just starting or preparing for an audition, I offer private or group sessions focused on technique, choreography, and performance expression.",
-        image: "src/assets/swimmer.jpg"
-      }
-    ];
-    
-
     return new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open("UShareDB", 1);
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        if (!db.objectStoreNames.contains("search")) {
-          db.createObjectStore("search");
-        }
-        if (!db.objectStoreNames.contains("cards")) {
-          db.createObjectStore("cards", { keyPath: "id" });
-        }
-        if (!db.objectStoreNames.contains("userProfilePhoto")) {
-          db.createObjectStore("userProfilePhoto");
-        }
-        if (!db.objectStoreNames.contains("userProfileDetails")) {
-          db.createObjectStore("userProfileDetails");
-        }
-        if (!db.objectStoreNames.contains("registration")) {
-          db.createObjectStore("registration");
-        }
-        if (!db.objectStoreNames.contains("reviews")) {
-          db.createObjectStore("reviews", { keyPath: "id", autoIncrement: true });
-        }
-      };
-  
-      request.onsuccess = () => {
-        const db = request.result;
-        
-        // Start a new transaction for the refresh
-        const tx = db.transaction(["cards"], "readwrite");
-        const store = tx.objectStore("cards");
-        
-        // Clear existing data
-        const clearRequest = store.clear();
-        
-        clearRequest.onsuccess = () => {
-          
-          const addRequests = dummyData.map(item => {
-            return new Promise<void>((res, rej) => {
-              const addReq = store.add(item);
-              addReq.onsuccess = () => res();
-              addReq.onerror = () => rej(addReq.error);
-            });
-          });
-          
-          Promise.all(addRequests)
-            .then(() => resolve())
-            .catch(err => reject(err));
-        };
-        
-        clearRequest.onerror = () => reject(clearRequest.error);
-      };
-      
-      request.onerror = () => reject(request.error);
+      // Fetch profiles from the backend
+      fetch("http://localhost:3000/matching/getProfiles")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch profiles: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((profiles) => {
+          // Open IndexedDB
+          const request = indexedDB.open("UShareDB", 1);
+
+          request.onupgradeneeded = (event) => {
+            const db = (event.target as IDBOpenDBRequest).result;
+            if (!db.objectStoreNames.contains("search")) {
+              db.createObjectStore("search");
+            }
+            if (!db.objectStoreNames.contains("cards")) {
+              db.createObjectStore("cards", { keyPath: "id" });
+            }
+            if (!db.objectStoreNames.contains("userProfilePhoto")) {
+              db.createObjectStore("userProfilePhoto");
+            }
+            if (!db.objectStoreNames.contains("userProfileDetails")) {
+              db.createObjectStore("userProfileDetails");
+            }
+            if (!db.objectStoreNames.contains("registration")) {
+              db.createObjectStore("registration");
+            }
+            if (!db.objectStoreNames.contains("reviews")) {
+              db.createObjectStore("reviews", { keyPath: "id", autoIncrement: true });
+            }
+          };
+
+          request.onsuccess = () => {
+            const db = request.result;
+
+            // Start a new transaction for the refresh
+            const tx = db.transaction(["cards"], "readwrite");
+            const store = tx.objectStore("cards");
+
+            // Clear existing data
+            const clearRequest = store.clear();
+
+            clearRequest.onsuccess = () => {
+              const addRequests = profiles.map((profile: any) => {
+                return new Promise<void>((res, rej) => {
+                  const addReq = store.add(profile);
+                  addReq.onsuccess = () => res();
+                  addReq.onerror = () => rej(addReq.error);
+                });
+              });
+
+              Promise.all(addRequests)
+                .then(() => resolve())
+                .catch((err) => reject(err));
+            };
+
+            clearRequest.onerror = () => reject(clearRequest.error);
+          };
+
+          request.onerror = () => reject(request.error);
+        })
+        .catch((err) => {
+          console.error("Error fetching profiles:", err);
+          reject(err);
+        });
     });
   }
 
@@ -243,7 +162,7 @@ export class Matching extends BaseComponent {
 
     // Close button
     const closeButton = document.createElement("button");
-    closeButton.innerText = "Close";
+    closeButton.innerText = "X";
     closeButton.classList.add("close-btn");
     closeButton.addEventListener("click", () => {
       expandedViewOverlay.style.display = "none";
@@ -258,7 +177,7 @@ export class Matching extends BaseComponent {
     let debounceTimer: NodeJS.Timeout;
 
     // Function to create card element (reusable)
-    const createCardElement = (cardData: any) => {
+    const createCardElement = (cardData: any, matched: Set<number>) => {
       const card = document.createElement("div");
       card.classList.add("card");
 
@@ -288,7 +207,15 @@ export class Matching extends BaseComponent {
 
       const matchButton = document.createElement("button");
       matchButton.classList.add("match-btn");
-      matchButton.innerText = "Match";
+
+      // Check if the card is matched
+      if (matched.has(cardData.id)) {
+        matchButton.innerText = "Unmatch";
+        matchButton.style.backgroundColor = "red";
+      } else {
+        matchButton.innerText = "Match";
+        matchButton.style.backgroundColor = "green";
+      }
 
       const moreButton = document.createElement("button");
       moreButton.classList.add("more-btn");
@@ -302,6 +229,59 @@ export class Matching extends BaseComponent {
       card.appendChild(description);
       card.appendChild(buttons);
 
+      matchButton.addEventListener("click", () => {
+        if (matchButton.innerText === "Match") {
+          // Call the API to match the card ID with user ID 1
+          fetch(`http://localhost:3000/matching/1/match/${cardData.id}`, {
+            method: "POST",
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`Failed to match: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(() => {
+              // Change the button to "Unmatch"
+              matchButton.innerText = "Unmatch";
+              matchButton.style.backgroundColor = "red";
+
+              // Update the matched list in IndexedDB
+              this.#updateMatchedList(cardData.id, true)
+                .then(() => console.log("Matched list updated in IndexedDB."))
+                .catch((err) => console.error("Error updating matched list:", err));
+            })
+            .catch((err) => {
+              console.error("Error matching:", err);
+            });
+        } else {
+          // Call the API to unmatch the card ID with user ID 1
+          fetch(`http://localhost:3000/matching/1/unmatch/${cardData.id}`, {
+            method: "POST",
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`Failed to unmatch: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(() => {
+              // Change the button back to "Match"
+              matchButton.innerText = "Match";
+              matchButton.style.backgroundColor = "green";
+
+              // Update the matched list in IndexedDB
+              this.#updateMatchedList(cardData.id, false)
+                .then(() => console.log("Matched list updated in IndexedDB."))
+                .catch((err) => console.error("Error updating matched list:", err));
+            })
+            .catch((err) => {
+              console.error("Error unmatching:", err);
+            });
+        }
+      });
+
+      // Add event listener to the "More" button
       moreButton.addEventListener("click", () => {
         // Clear and build expanded view
         expandedCard.innerHTML = "";
@@ -325,13 +305,12 @@ export class Matching extends BaseComponent {
     
         expandedViewOverlay.style.display = "flex";
       });
-    
 
       return card;
     };
 
     // Optimized card rendering with DOM diffing
-    const renderCards = (filteredCards: any[]) => {
+    const renderCards = (filteredCards: any[], matched: Set<number>) => {
       const currentCards = Array.from(cardContainer.children);
       
       // Update or add cards
@@ -344,7 +323,7 @@ export class Matching extends BaseComponent {
           (existingCard.querySelector("img") as HTMLImageElement).src = cardData.image;
         } else {
           // Add new card
-          cardContainer.appendChild(createCardElement(cardData));
+          cardContainer.appendChild(createCardElement(cardData, matched));
         }
       });
 
@@ -356,6 +335,7 @@ export class Matching extends BaseComponent {
 
     // Initial load
     allCards = await this.#getCardsFromDB();
+    const { cards, matched } = allCards;
 
     // Load previous search query and apply filtering
     let savedQuery = "";
@@ -367,13 +347,13 @@ export class Matching extends BaseComponent {
     }
 
     const filteredCards = savedQuery
-      ? allCards.filter(card =>
+      ? cards.filter(card =>
           card.description.toLowerCase().includes(savedQuery.toLowerCase()) ||
           card.username.toLowerCase().includes(savedQuery.toLowerCase())
         )
-      : allCards;
+      : cards;
 
-    renderCards(filteredCards);
+    renderCards(filteredCards, matched);
 
 
     // Debounced search handler
@@ -387,17 +367,94 @@ export class Matching extends BaseComponent {
       // Set new debounce timer
       debounceTimer = setTimeout(() => {
         const filteredCards = searchTerm
-          ? allCards.filter(card =>
+          ? cards.filter(card =>
               card.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
               card.username.toLowerCase().includes(searchTerm.toLowerCase())
             )
-          : allCards;
+          : cards;
 
         requestAnimationFrame(() => {
-          renderCards(filteredCards);
+          renderCards(filteredCards, matched);
         });
       }, 150); // 150ms debounce delay
     });
+
+    // Add "Show Matches" button
+    const showMatchesButton = document.createElement("button");
+    showMatchesButton.innerText = "Show Matches";
+    showMatchesButton.classList.add("show-matches-btn");
+    showMatchesButton.style.backgroundColor = "#4CAF50";
+    showMatchesButton.style.color = "white";
+    showMatchesButton.style.padding = "5px 5px";
+    showMatchesButton.style.margin = "5px";
+    showMatchesButton.style.border = "none";
+    showMatchesButton.style.borderRadius = "8px";
+    showMatchesButton.style.fontSize = "12px";
+    showMatchesButton.style.cursor = "pointer";
+    showMatchesButton.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+    showMatchesButton.style.transition = "background-color 0.3s ease, transform 0.2s ease";
+    // Modify "Show Matches" button to fetch and display a list of matches
+    showMatchesButton.addEventListener("click", async () => {
+      const popupCard = document.createElement("div");
+      popupCard.classList.add("popup-card");
+
+      // Style the popup card
+      popupCard.style.position = "fixed";
+      popupCard.style.top = "50%";
+      popupCard.style.left = "50%";
+      popupCard.style.transform = "translate(-50%, -50%)";
+      popupCard.style.padding = "20px 25px";
+      popupCard.style.backgroundColor = "white";
+      popupCard.style.border = "1px solid #ddd"; // Softer border
+      popupCard.style.borderRadius = "12px";     // Rounded corners
+      popupCard.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.15)"; // Softer, deeper shadow
+      popupCard.style.zIndex = "1000";
+
+      // Fetch matches from the API
+      try {
+        const response = await fetch("http://localhost:3000/matching/getMatches/1");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch matches: ${response.status}`);
+        }
+        const matches = await response.json();
+
+        // Create a list to display matches
+        const matchList = document.createElement("ul");
+        matches.forEach((match: string) => {
+          const listItem = document.createElement("li");
+          listItem.innerText = match;
+          matchList.appendChild(listItem);
+        });
+        popupCard.appendChild(matchList);
+      } catch (error) {
+        console.error("Error fetching matches:", error);
+        popupCard.innerText = "Failed to load matches.";
+      }
+
+      // Add a close button
+      const closeButton = document.createElement("button");
+      closeButton.innerText = "Close";
+      closeButton.style.marginTop = "10px";
+      closeButton.style.backgroundColor = "#f44336"; // Red background
+      closeButton.style.color = "white";
+      closeButton.style.padding = "5px 5px";
+      closeButton.style.margin = "5px";
+      closeButton.style.marginTop = "10px";
+      closeButton.style.border = "none";
+      closeButton.style.borderRadius = "8px";
+      closeButton.style.fontSize = "12px";
+      closeButton.style.cursor = "pointer";
+      closeButton.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+      closeButton.style.transition = "background-color 0.3s ease, transform 0.2s ease";
+      closeButton.addEventListener("click", () => {
+        popupCard.remove();
+      });
+
+      popupCard.appendChild(closeButton);
+      document.body.appendChild(popupCard);
+    });
+
+    searchContainer.appendChild(showMatchesButton);
 
     // Assemble the UI
     containerWrapper.appendChild(cardContainer);
@@ -406,20 +463,75 @@ export class Matching extends BaseComponent {
   }
 
   // Helper method to fetch cards from IndexedDB
-  async #getCardsFromDB(): Promise<any[]> {
+  async #getCardsFromDB(): Promise<{ cards: any[], matched: Set<number> }> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open("UShareDB", 1);
-      
+
       request.onsuccess = () => {
         const db = request.result;
-        const tx = db.transaction("cards", "readonly");
-        const store = tx.objectStore("cards");
-        const getAllRequest = store.getAll();
-        
-        getAllRequest.onsuccess = () => resolve(getAllRequest.result);
-        getAllRequest.onerror = () => reject(getAllRequest.error);
+
+        // Fetch cards
+        const txCards = db.transaction("cards", "readonly");
+        const storeCards = txCards.objectStore("cards");
+        const getAllCardsRequest = storeCards.getAll();
+
+        // Fetch matched list
+        const txMatched = db.transaction("registration", "readonly");
+        const storeMatched = txMatched.objectStore("registration");
+        const getMatchedRequest = storeMatched.get(1); // Assuming user ID 1
+
+        Promise.all([
+          new Promise<any[]>((res, rej) => {
+            getAllCardsRequest.onsuccess = () => res(getAllCardsRequest.result);
+            getAllCardsRequest.onerror = () => rej(getAllCardsRequest.error);
+          }),
+          new Promise<Set<number>>((res, rej) => {
+            getMatchedRequest.onsuccess = () => {
+              const matchedList = getMatchedRequest.result?.matched || [];
+              res(new Set(matchedList));
+            };
+            getMatchedRequest.onerror = () => rej(getMatchedRequest.error);
+          }),
+        ])
+          .then(([cards, matched]) => resolve({ cards, matched }))
+          .catch(reject);
       };
-      
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Add a helper method to update the matched list in IndexedDB
+  #updateMatchedList(cardId: number, isMatched: boolean): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open("UShareDB", 1);
+
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction("registration", "readwrite");
+        const store = tx.objectStore("registration");
+
+        const getRequest = store.get(1); // Assuming user ID 1
+        getRequest.onsuccess = () => {
+          const userData = getRequest.result || { matched: [] };
+          const matchedList = new Set(userData.matched);
+
+          if (isMatched) {
+            matchedList.add(cardId);
+          } else {
+            matchedList.delete(cardId);
+          }
+
+          userData.matched = Array.from(matchedList);
+
+          const putRequest = store.put(userData, 1);
+          putRequest.onsuccess = () => resolve();
+          putRequest.onerror = () => reject(putRequest.error);
+        };
+
+        getRequest.onerror = () => reject(getRequest.error);
+      };
+
       request.onerror = () => reject(request.error);
     });
   }
