@@ -2,8 +2,8 @@
   {
     "name": "User 1",
     "availability": "Online",
-    "lastMessageText": null,
-    "lastMessageTimestamp": null
+    "lastMessageText": "File: jscheatsheet.pdf",
+    "lastMessageTimestamp": 1745620135094
   },
   {
     "name": "User 2",
@@ -26,8 +26,8 @@
   {
     "name": "User 5",
     "availability": "Away",
-    "lastMessageText": "File: jscheatsheet.pdf",
-    "lastMessageTimestamp": 1745618242545
+    "lastMessageText": null,
+    "lastMessageTimestamp": null
   },
   {
     "name": "User 6",
