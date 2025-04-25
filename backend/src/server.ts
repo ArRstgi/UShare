@@ -1,5 +1,6 @@
 import express from "express";
 import profileRoutes from "../routes/profileRoutes";
+import matchingRoutes from "../routes/MatchingRoutes";
 import userRoutes from "../routes/userRoutes";
 import messageRoutes from "../routes/messageRoutes";
 import userModel from "../models/userModel";
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/profile", profileRoutes);
+app.use("/matching", matchingRoutes);
 
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
