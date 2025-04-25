@@ -24,6 +24,7 @@ Team Member List:
       - UI DESIGN: Matching System UI
       - DATA DESIGN: Match Data Structure
       - TEAM DESIGN: Meeting Coordinator
+      - SERVER DESIGN: Matching API
 - Arush Rastogi
   - Role Name: Note-Taker
   - Issues to work on:
