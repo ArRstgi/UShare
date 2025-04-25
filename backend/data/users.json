@@ -1,0 +1,38 @@
+[
+  {
+    "name": "User 1",
+    "availability": "Online",
+    "lastMessageText": null,
+    "lastMessageTimestamp": null
+  },
+  {
+    "name": "User 2",
+    "availability": "Offline",
+    "lastMessageText": null,
+    "lastMessageTimestamp": null
+  },
+  {
+    "name": "User 3",
+    "availability": "Busy",
+    "lastMessageText": null,
+    "lastMessageTimestamp": null
+  },
+  {
+    "name": "User 4",
+    "availability": "Online",
+    "lastMessageText": null,
+    "lastMessageTimestamp": null
+  },
+  {
+    "name": "User 5",
+    "availability": "Away",
+    "lastMessageText": "File: jscheatsheet.pdf",
+    "lastMessageTimestamp": 1745618242545
+  },
+  {
+    "name": "User 6",
+    "availability": "Online",
+    "lastMessageText": null,
+    "lastMessageTimestamp": null
+  }
+]
