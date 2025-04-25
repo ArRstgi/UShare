@@ -4,7 +4,7 @@ import path from "path";
 // Define the Profile type
 interface Profile {
   id: number;
-  name?: string;
+  username?: string;
   age?: number;
   matched?: number[];
   description?: string;

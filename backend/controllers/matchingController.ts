@@ -16,6 +16,16 @@ export function getAllProfile(req: Request, res: Response): void {
   res.json(profiles);
 }
 
+export function getAllMatch(req: Request, res: Response): void {
+  const { id } = req.params;
+  const profile = getProfileById(parseInt(id, 10));
+  if (!profile) {
+    res.status(404).json({ error: "Unable to load Matches" });
+    return;
+  }
+  res.json(profile.matched?.map((matchId => getProfileById(matchId)?.username)) || []);
+}
+
 export function match(req: Request, res: Response): void {
   const { currentId, matchId } = req.params;
 

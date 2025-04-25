@@ -229,7 +229,6 @@ export class Matching extends BaseComponent {
       card.appendChild(description);
       card.appendChild(buttons);
 
-      // Add event listener to the Match button
       matchButton.addEventListener("click", () => {
         if (matchButton.innerText === "Match") {
           // Call the API to match the card ID with user ID 1
@@ -379,6 +378,83 @@ export class Matching extends BaseComponent {
         });
       }, 150); // 150ms debounce delay
     });
+
+    // Add "Show Matches" button
+    const showMatchesButton = document.createElement("button");
+    showMatchesButton.innerText = "Show Matches";
+    showMatchesButton.classList.add("show-matches-btn");
+    showMatchesButton.style.backgroundColor = "#4CAF50";
+    showMatchesButton.style.color = "white";
+    showMatchesButton.style.padding = "5px 5px";
+    showMatchesButton.style.margin = "5px";
+    showMatchesButton.style.border = "none";
+    showMatchesButton.style.borderRadius = "8px";
+    showMatchesButton.style.fontSize = "12px";
+    showMatchesButton.style.cursor = "pointer";
+    showMatchesButton.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+    showMatchesButton.style.transition = "background-color 0.3s ease, transform 0.2s ease";
+    // Modify "Show Matches" button to fetch and display a list of matches
+    showMatchesButton.addEventListener("click", async () => {
+      const popupCard = document.createElement("div");
+      popupCard.classList.add("popup-card");
+
+      // Style the popup card
+      popupCard.style.position = "fixed";
+      popupCard.style.top = "50%";
+      popupCard.style.left = "50%";
+      popupCard.style.transform = "translate(-50%, -50%)";
+      popupCard.style.padding = "20px 25px";
+      popupCard.style.backgroundColor = "white";
+      popupCard.style.border = "1px solid #ddd"; // Softer border
+      popupCard.style.borderRadius = "12px";     // Rounded corners
+      popupCard.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.15)"; // Softer, deeper shadow
+      popupCard.style.zIndex = "1000";
+
+      // Fetch matches from the API
+      try {
+        const response = await fetch("http://localhost:3000/matching/getMatches/1");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch matches: ${response.status}`);
+        }
+        const matches = await response.json();
+
+        // Create a list to display matches
+        const matchList = document.createElement("ul");
+        matches.forEach((match: string) => {
+          const listItem = document.createElement("li");
+          listItem.innerText = match;
+          matchList.appendChild(listItem);
+        });
+        popupCard.appendChild(matchList);
+      } catch (error) {
+        console.error("Error fetching matches:", error);
+        popupCard.innerText = "Failed to load matches.";
+      }
+
+      // Add a close button
+      const closeButton = document.createElement("button");
+      closeButton.innerText = "Close";
+      closeButton.style.marginTop = "10px";
+      closeButton.style.backgroundColor = "#f44336"; // Red background
+      closeButton.style.color = "white";
+      closeButton.style.padding = "5px 5px";
+      closeButton.style.margin = "5px";
+      closeButton.style.marginTop = "10px";
+      closeButton.style.border = "none";
+      closeButton.style.borderRadius = "8px";
+      closeButton.style.fontSize = "12px";
+      closeButton.style.cursor = "pointer";
+      closeButton.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+      closeButton.style.transition = "background-color 0.3s ease, transform 0.2s ease";
+      closeButton.addEventListener("click", () => {
+        popupCard.remove();
+      });
+
+      popupCard.appendChild(closeButton);
+      document.body.appendChild(popupCard);
+    });
+
+    searchContainer.appendChild(showMatchesButton);
 
     // Assemble the UI
     containerWrapper.appendChild(cardContainer);

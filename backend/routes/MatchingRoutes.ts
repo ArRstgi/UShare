@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { getAllProfile, match, unmatch } from "../controllers/matchingController";
+import { getAllProfile, getAllMatch, match, unmatch } from "../controllers/matchingController";
 
 const router = Router();
 
 // Route to get all profiles
 router.get("/getProfiles", getAllProfile);
+
+router.get("/getMatches/:id", getAllMatch);
 
 router.post("/:currentId/match/:matchId", match);
 
