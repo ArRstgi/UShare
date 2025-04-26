@@ -1,14 +1,8 @@
 import { BaseComponent } from "@/components/BaseComponent";
-import { DatabaseService } from "../../services/database-service";
-import {
-  USERS_STORE,
-  MESSAGES_STORE,
-  ALLOWED_FILE_TYPES,
-  paperclipIconSVG,
-  initialUsersData,
-} from "./constants";
+import { ALLOWED_FILE_TYPES, paperclipIconSVG } from "./constants";
 import type { User, Message } from "./types";
 import { formatTimestamp, getFileIcon } from "./chat-utils";
+import { ApiService } from "@/services/api-service";
 
 /**
  * Controller for the Chat Page, managing state, DB, and DOM directly.
@@ -18,7 +12,6 @@ export class ChatPage extends BaseComponent {
   #container: HTMLElement | null = null;
 
   // Service
-  #dbService: DatabaseService;
 
   // UI Element References
   #messagesListUL: HTMLUListElement | null = null;
@@ -38,7 +31,6 @@ export class ChatPage extends BaseComponent {
   constructor() {
     super();
     this.loadCSS("src/pages/Chat", "styles");
-    this.#dbService = new DatabaseService();
   }
 
   render(): HTMLElement {
@@ -142,30 +134,11 @@ export class ChatPage extends BaseComponent {
   /** Coordinates async setup */
   async #initializePage() {
     try {
-      await this.#dbService.ready();
-      await this.#populateInitialUsers();
       await this.#renderUserList(); // Initial list render
       await this.#loadInitialConversation();
     } catch (error) {
       console.error("Failed to initialize chat page:", error);
       this.#showConversationPlaceholder("Error loading chat.", true);
-    }
-  }
-
-  /** Populates DB with initial users if needed */
-  async #populateInitialUsers() {
-    const userCount = await this.#dbService.count(USERS_STORE);
-    if (userCount === 0) {
-      console.log("Populating initial users...");
-      // Include availability now
-      const putPromises = initialUsersData.map((user) =>
-        this.#dbService.put(USERS_STORE, {
-          name: user.name,
-          availability: user.availability,
-        })
-      );
-      await Promise.all(putPromises);
-      console.log("Initial users populated.");
     }
   }
 
@@ -179,7 +152,7 @@ export class ChatPage extends BaseComponent {
 
     try {
       // Fetch users - they now have lastMessageTimestamp/Text stored on them
-      const users = await this.#dbService.getAll<User>(USERS_STORE);
+      const users = await ApiService.getUsers();
 
       // Sort directly using the stored timestamp
       users.sort(
@@ -259,18 +232,19 @@ export class ChatPage extends BaseComponent {
 
   /** Loads the first conversation or placeholder */
   async #loadInitialConversation() {
-    const users = await this.#dbService.getAll<User>(USERS_STORE);
-    // Sort by stored timestamp to potentially load the most recent chat first
-    users.sort(
-      (a, b) => (b.lastMessageTimestamp ?? 0) - (a.lastMessageTimestamp ?? 0)
-    );
-    if (users.length > 0) {
-      await this.#handleUserSelected(users[0]);
-    } else {
-      this.#cur_user = null;
-      this.#updateConversationHeader("Select a chat");
-      this.#showConversationPlaceholder("No users available.");
-      this.#updateActiveUserHighlight();
+    try {
+      const users = await ApiService.getUsers();
+      if (users.length > 0) {
+        await this.#handleUserSelected(users[0]); // Select the first user
+      } else {
+        this.#cur_user = null;
+        this.#updateConversationHeader("Select a chat");
+        this.#showConversationPlaceholder("No users available.");
+        this.#updateActiveUserHighlight();
+      }
+    } catch (error) {
+      console.error("Failed to load initial conversation users:", error);
+      this.#showConversationPlaceholder("Error loading user list.", true);
     }
   }
 
@@ -343,139 +317,85 @@ export class ChatPage extends BaseComponent {
     if (this.#cur_user?.name === selectedUser.name) return;
     this.#cur_user = selectedUser;
     this.#updateActiveUserHighlight();
-    this.#updateConversationHeader(selectedUser.name); // Update header (includes response time again)
-    await this.#renderConversationMessages(selectedUser);
+    this.#updateConversationHeader(selectedUser.name);
+    // Pass "You" (current frontend user) and selected user's name
+    await this.#renderConversationMessages("You", selectedUser.name);
   };
 
   /** Handles sending a text message */
   #handleSendMessage = async () => {
     if (!this.#cur_user || !this.#messageInput?.value.trim()) return;
     const text = this.#messageInput.value.trim();
+    const receiverName = this.#cur_user.name;
     this.#messageInput.value = ""; // Clear input
 
-    const newMessage: Message = {
-      sender: "You",
-      receiver: this.#cur_user.name,
-      text: text,
-      timestamp: Date.now(),
-    };
-    await this.#saveAndUpdate(newMessage); // Use common save/update logic
+    try {
+      const newMessageFromApi = await ApiService.sendMessage(
+        "You",
+        receiverName,
+        text
+      );
+      this.#renderSingleMessageElement(newMessageFromApi); // Render API response
+      this.#scrollToBottom();
+      await this.#renderUserList(this.#searchInput?.value ?? ""); // Refresh user list
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      alert(
+        `Failed to send message: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   };
 
   /** Processes and sends a file */
   #processAndSendFile = async (file: File) => {
     if (!this.#cur_user) {
-      alert("Select chat first.");
-      return;
-    } // Safety check
-    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      alert(`File type not allowed: ${file.type}.`);
-      return;
+      /* alert */ return;
     }
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      /* alert */ return;
+    }
+    const receiverName = this.#cur_user.name;
 
-    const newMessage: Message = {
-      sender: "You",
-      receiver: this.#cur_user.name,
-      file: file,
-      fileName: file.name,
-      fileType: file.type,
-      timestamp: Date.now(),
-    };
-    await this.#saveAndUpdate(newMessage); // Use common save/update logic
+    try {
+      const newMessageFromApi = await ApiService.sendMessage(
+        "You",
+        receiverName,
+        undefined, // No text content
+        file
+      );
+      this.#renderSingleMessageElement(newMessageFromApi); // Render API response
+      this.#scrollToBottom();
+      await this.#renderUserList(this.#searchInput?.value ?? ""); // Refresh user list
+    } catch (error) {
+      console.error("Failed to send file:", error);
+      alert(
+        `Failed to send file: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   };
 
-  /** Common logic to save message, update UI, and update user preview */
-  async #saveAndUpdate(newMessage: Message) {
-    if (!this.#cur_user) return; // Should have a current user here
-
-    try {
-      // 1. Save the message
-      const savedMessage = await this.#saveMessageToDB(newMessage);
-
-      // 2. Update Conversation View
-      this.#renderSingleMessageElement(savedMessage);
-      this.#scrollToBottom();
-
-      // 3. Update User Store & List Item (Simplified Preview Logic)
-      const previewText = savedMessage.text ?? `File: ${savedMessage.fileName}`;
-      await this.#updateUserStoreAndPreview(
-        this.#cur_user.name,
-        previewText,
-        savedMessage.timestamp
-      );
-    } catch (error) {
-      console.error("Failed to save/update:", error);
-      alert("Failed to send message or update status.");
-    }
-  }
-
-  /** Updates User store and DOM list item */
-  async #updateUserStoreAndPreview(
-    userName: string,
-    text: string,
-    timestamp: number
+  /** Fetches and renders messages */
+  async #renderConversationMessages(
+    currentUser: string,
+    selectedUserName: string
   ) {
+    if (!this.#conversationMessagesContainer) return;
+    this.#conversationMessagesContainer.innerHTML = ""; // Clear existing messages
+
     try {
-      // Fetch the user
-      const user = await this.#dbService.get<User>(USERS_STORE, userName);
-      if (!user) return; // User not found
-
-      // Update preview fields
-      user.lastMessageText = text;
-      user.lastMessageTimestamp = timestamp;
-
-      // Save updated user back to DB
-      await this.#dbService.put(USERS_STORE, user);
-
-      // Update the DOM list item directly (more efficient than full re-render)
-      const listItem = this.#messagesListUL?.querySelector<HTMLElement>(
-        `.message-item[data-user-name="${userName}"]`
+      const messages = await ApiService.getMessages(
+        currentUser,
+        selectedUserName
       );
-      if (listItem) {
-        const previewEl = listItem.querySelector<HTMLParagraphElement>(
-          ".last-message-preview"
+      if (messages.length === 0) {
+        this.#showConversationPlaceholder(
+          `No messages with ${selectedUserName}. Start the conversation!`
         );
-        const availabilityEl =
-          listItem.querySelector<HTMLSpanElement>(".availability");
-        if (previewEl)
-          previewEl.textContent =
-            text.length > 30 ? text.substring(0, 27) + "..." : text;
-        if (availabilityEl)
-          availabilityEl.textContent = `${user.availability} • ${formatTimestamp(timestamp)}`;
-        // Move to top
-        if (
-          this.#messagesListUL &&
-          listItem !== this.#messagesListUL.firstChild
-        ) {
-          this.#messagesListUL.insertBefore(
-            listItem,
-            this.#messagesListUL.firstChild
-          );
-        }
       } else {
-        // If item not found (e.g., due to search filter), trigger a full list re-render
-        await this.#renderUserList(this.#searchInput?.value ?? "");
+        messages.forEach((msg) => this.#renderSingleMessageElement(msg));
       }
     } catch (error) {
-      console.error(
-        `Failed to update user store/preview for ${userName}:`,
-        error
-      );
-    }
-  }
-
-  /** Fetches and renders messages */
-  async #renderConversationMessages(selectedUser: User) {
-    if (!this.#conversationMessagesContainer) return;
-    this.#conversationMessagesContainer.innerHTML = "";
-    try {
-      const messages = await this.#getMessagesForChat(selectedUser.name);
-      if (messages.length === 0)
-        this.#showConversationPlaceholder(
-          `No messages with ${selectedUser.name}.`
-        );
-      else messages.forEach((msg) => this.#renderSingleMessageElement(msg));
-    } catch (error) {
+      console.error("Error loading messages:", error);
       this.#showConversationPlaceholder("Error loading messages.", true);
     }
     this.#scrollToBottom();
@@ -484,6 +404,11 @@ export class ChatPage extends BaseComponent {
   /** Renders a single message element (text or file) */
   #renderSingleMessageElement(message: Message) {
     if (!this.#conversationMessagesContainer) return;
+    const placeholder = this.#conversationMessagesContainer.querySelector(
+      ".conversation-placeholder"
+    );
+    if (placeholder) placeholder.remove();
+
     const messageWrapper = document.createElement("div");
     messageWrapper.classList.add("message-wrapper");
     const messageDiv = document.createElement("div");
@@ -491,16 +416,17 @@ export class ChatPage extends BaseComponent {
       "message",
       message.sender === "You" ? "sent" : "received"
     );
-    // File display
-    if (message.file && message.fileName) {
+
+    // File display: Use backend fields
+    if (message.filePath && message.fileName) {
       messageDiv.classList.add("file-message");
-      const fileIcon = getFileIcon(message.fileType);
+      const fileIcon = getFileIcon(message.fileType); // Use backend fileType
       const fileLink = document.createElement("a");
-      fileLink.href = "#";
-      fileLink.dataset.messageId = message.id?.toString();
-      fileLink.innerHTML = `${fileIcon} <span>${message.fileName}</span> <small>(${(message.file.size / 1024).toFixed(1)} KB)</small>`;
+      fileLink.href = "#"; // Let click handler trigger download
+      fileLink.dataset.messageId = message.id?.toString(); // Use backend string ID
+      fileLink.innerHTML = `${fileIcon} <span>${message.fileName}</span>`;
       fileLink.title = "Click to download";
-      fileLink.addEventListener("click", this.#handleDownloadClick); // Use central handler
+      fileLink.addEventListener("click", this.#handleDownloadClick);
       messageDiv.appendChild(fileLink);
     } else {
       // Text display
@@ -510,46 +436,25 @@ export class ChatPage extends BaseComponent {
     }
     const messageTime = document.createElement("span");
     messageTime.classList.add("message-time");
-    messageTime.textContent = formatTimestamp(message.timestamp); // Use full format util
+    messageTime.textContent = formatTimestamp(message.timestamp);
     messageWrapper.appendChild(messageDiv);
     messageWrapper.appendChild(messageTime);
     this.#conversationMessagesContainer.appendChild(messageWrapper);
   }
 
   /** Central handler for download clicks */
-  #handleDownloadClick = async (event: Event) => {
+  #handleDownloadClick = (event: Event) => {
+    // No async needed
     event.preventDefault();
     const target = event.currentTarget as HTMLElement;
-    const messageIdStr = target.dataset.messageId;
-    if (messageIdStr) {
-      const messageId = parseInt(messageIdStr, 10);
-      await this.#downloadFile(messageId); // Call download logic
+    const messageId = target.dataset.messageId; // Get the string ID from dataset
+    if (messageId) {
+      ApiService.downloadFile(messageId); // Trigger download via service
+    } else {
+      console.error("Message ID missing for download");
+      alert("Cannot download file: missing ID.");
     }
   };
-
-  /** Logic to download the file */
-  async #downloadFile(messageId: number): Promise<void> {
-    try {
-      const message = await this.#dbService.get<Message>(
-        MESSAGES_STORE,
-        messageId
-      );
-      if (message?.file && message.fileName) {
-        const url = URL.createObjectURL(message.file);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = message.fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-        a.remove();
-      } else {
-        throw new Error("File data missing.");
-      }
-    } catch (error) {
-      console.error("Download failed:", error);
-      alert("Could not download file.");
-    }
-  }
 
   /** Updates conversation header */
   #updateConversationHeader(userName: string) {
@@ -581,31 +486,5 @@ export class ChatPage extends BaseComponent {
     if (this.#conversationMessagesContainer)
       this.#conversationMessagesContainer.scrollTop =
         this.#conversationMessagesContainer.scrollHeight;
-  }
-
-  // Data Logic (using Service)
-  async #getMessagesForChat(userName: string): Promise<Message[]> {
-    const toUserQuery = IDBKeyRange.only([userName]);
-    const fromUserQuery = IDBKeyRange.only([userName]);
-    const messagesToUser = await this.#dbService.queryIndex<Message>(
-      MESSAGES_STORE,
-      "receiverTimestampIdx",
-      toUserQuery
-    );
-    const messagesFromUser = await this.#dbService.queryIndex<Message>(
-      MESSAGES_STORE,
-      "senderTimestampIdx",
-      fromUserQuery
-    );
-    const allMessages = [...messagesToUser, ...messagesFromUser];
-    allMessages.sort((a, b) => a.timestamp - b.timestamp);
-    return allMessages;
-  }
-  async #saveMessageToDB(message: Message): Promise<Message> {
-    const savedKey = await this.#dbService.put<Message>(
-      MESSAGES_STORE,
-      message
-    );
-    return { ...message, id: savedKey as number };
   }
 }

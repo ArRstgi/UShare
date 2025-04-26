@@ -4,11 +4,8 @@ export const paperclipIconSVG = `
     <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
 </svg>`;
 
-/** DB Config */
-export const DB_NAME = "UShare";
-export const DB_VERSION = 1;
-export const USERS_STORE = "users";
-export const MESSAGES_STORE = "messages";
+/** Backend API URL */
+export const API_BASE_URL = "http://localhost:3000/api";
 
 /** File Upload Config */
 export const ALLOWED_FILE_TYPES = [

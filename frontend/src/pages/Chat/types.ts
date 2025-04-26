@@ -17,8 +17,8 @@ export interface Message {
   sender: string;
   receiver: string;
   text?: string;
-  file?: File;
   fileName?: string;
   fileType?: string;
+  filePath?: string | null;
   timestamp: number;
 }
