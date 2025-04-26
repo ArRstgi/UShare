@@ -33,9 +33,11 @@ Team Member List:
       - UI DESIGN: Chat & Scheduling UI
       - DATA DESIGN: Chat Message Data Structure
       - TEAM DESIGN: Note-Taker
+      - SERVER DESIGN: Chat (Users and Messages) API
 - Trey Robbio
   - Role Name: Timekeeper
   - Issues to work on:
       - UI DESIGN: Rating & Review UI
       - DATA DESIGN: Review & Rating Data Structure
       - TEAM DESIGN: Timekeeper
+      - SERVER DESIGN: Review API
