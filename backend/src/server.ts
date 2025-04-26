@@ -1,4 +1,5 @@
 import express from "express";
+import reviewsRoutes from "../routes/reviewsRoutes";
 import profileRoutes from "../routes/profileRoutes";
 import matchingRoutes from "../routes/MatchingRoutes";
 import userRoutes from "../routes/userRoutes";
@@ -28,6 +29,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/profile", profileRoutes);
 app.use("/matching", matchingRoutes);
+app.use("/reviews", reviewsRoutes);
+
+app.use("/api/users", userRoutes);
+app.use("/api/messages", messageRoutes);
 
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
