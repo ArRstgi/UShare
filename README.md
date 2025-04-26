@@ -39,3 +39,4 @@ Team Member List:
       - UI DESIGN: Rating & Review UI
       - DATA DESIGN: Review & Rating Data Structure
       - TEAM DESIGN: Timekeeper
+      - SERVER DESIGN: Review API
