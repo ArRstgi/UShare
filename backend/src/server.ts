@@ -4,18 +4,11 @@ import profileRoutes from "../routes/profileRoutes";
 import matchingRoutes from "../routes/MatchingRoutes";
 import userRoutes from "../routes/userRoutes";
 import messageRoutes from "../routes/messageRoutes";
-import userModel from "../models/userModel";
 import storageService from "../services/storageService";
 import path from "path";
-import multer from "multer";
 import cors from "cors";
 
 const app = express();
-
-// upload folder on disk
-const upload = multer({
-  dest: path.join(__dirname, "../uploads/"),
-});
 
 // serve that folder publicly
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
