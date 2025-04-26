@@ -1,0 +1,34 @@
+[
+    {
+      "stars": 3,
+      "teacherName": "James",
+      "skill": "Singing",
+      "reviewerName": "David",
+      "date": "2/23/25",
+      "reviewText": "James was a great singing coach, although he was late to a few sessions."
+    },
+    {
+      "stars": 5,
+      "teacherName": "Sarah",
+      "skill": "Dancing",
+      "reviewerName": "David",
+      "date": "3/16/25",
+      "reviewText": "Sarah was an amazing dance teacher, she was always on time and very patient."
+    },
+    {
+      "stars": 4,
+      "teacherName": "John",
+      "skill": "Piano",
+      "reviewerName": "David",
+      "date": "3/12/25",
+      "reviewText": "John was a great piano teacher, he was always on time and very patient."
+    },
+    {
+      "stars": 2,
+      "teacherName": "Emma",
+      "skill": "Violin",
+      "reviewerName": "David",
+      "date": "3/10/25",
+      "reviewText": "Emma could improve her punctuality but is very knowledgeable."
+    }
+]

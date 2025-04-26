@@ -1,4 +1,5 @@
 import express from "express";
+import reviewsRoutes from "../routes/reviewsRoutes";
 import profileRoutes from "../routes/profileRoutes";
 import matchingRoutes from "../routes/MatchingRoutes";
 import path from "path";
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/profile", profileRoutes);  
 app.use("/matching", matchingRoutes);
+app.use("/reviews", reviewsRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
