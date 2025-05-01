@@ -1,49 +1,73 @@
-import fs from "fs";
-import path from "path";
+import {
+  Model,
+  DataTypes,
+  Optional,
+} from "sequelize";
+import { sequelize } from "./db";
 
-export interface Profile {
-  id: string;
+
+export interface ProfileAttributes {
+  id: number;
   skillsTeach: string;
   skillsLearn: string;
   availability: string;
   photoUrl?: string;
 }
 
-const DATA_PATH = path.join(__dirname, "../data/profiles.json");
+interface ProfileCreationAttributes
+  extends Optional<ProfileAttributes, "id" | "photoUrl"> {}
 
-let profiles: Profile[] = [];
-function loadFromDisk() {
-  try {
-    profiles = JSON.parse(fs.readFileSync(DATA_PATH, "utf-8"));
-  } catch {
-    profiles = [];
+export class Profile
+  extends Model<ProfileAttributes, ProfileCreationAttributes>
+  implements ProfileAttributes
+{
+  public id!: number;
+  public skillsTeach!: string;
+  public skillsLearn!: string;
+  public availability!: string;
+  public photoUrl?: string;
+
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+Profile.init(
+  {
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    skillsTeach: { type: DataTypes.TEXT, allowNull: false },
+    skillsLearn: { type: DataTypes.TEXT, allowNull: false },
+    availability: { type: DataTypes.TEXT, allowNull: false },
+    photoUrl: { type: DataTypes.STRING, allowNull: true },
+  },
+  {
+    tableName: "profiles",
+    sequelize,         
   }
-}
-function saveToDisk() {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(profiles, null, 2));
-}
+);
 
-// initialize
-loadFromDisk();
 
-export function getProfileById(id: string): Profile | undefined {
-  return profiles.find((p) => p.id === id);
+export async function getProfileById(
+  id: string
+): Promise<Profile | null> {
+  return Profile.findByPk(Number(id));
 }
 
-export function createProfile(data: Omit<Profile, "id">): Profile {
-  const newProfile: Profile = { id: Date.now().toString(), ...data };
-  profiles.push(newProfile);
-  saveToDisk();
-  return newProfile;
+
+export async function createProfile(
+  data: Omit<ProfileCreationAttributes, "id">
+): Promise<Profile> {
+  return Profile.create(data);
 }
 
-export function updateProfile(
+export async function updateProfile(
   id: string,
-  data: Partial<Omit<Profile, "id">>
-): Profile | undefined {
-  const p = getProfileById(id);
-  if (!p) return undefined;
-  Object.assign(p, data);
-  saveToDisk();
-  return p;
+  data: Partial<Omit<ProfileAttributes, "id">>
+): Promise<Profile | null> {
+  const profile = await Profile.findByPk(Number(id));
+  if (!profile) return null;
+  return profile.update(data);
 }
