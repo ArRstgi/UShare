@@ -8,7 +8,7 @@ interface ProfileDetails {
 
 export class UserProfilePage extends BaseComponent {
   #container: HTMLElement | null = null;
-  // TODO: replace this with real (per‑user) ID once we add authentication
+  // Replace this with real (per‑user) ID if we add authentication
   #profileId = "1";
 
   #profilePhotoUrl: string | null = null;
