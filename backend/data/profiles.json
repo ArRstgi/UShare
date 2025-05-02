@@ -1,9 +1,9 @@
 [
   {
     "id": "1",
-    "skillsTeach": "1",
+    "skillsTeach": "1,2",
     "skillsLearn": "4",
     "availability": "3",
-    "photoUrl": "http://localhost:3000/uploads/c400199ab24ea31c385cfe5ee7c86fde"
+    "photoUrl": "http://localhost:3000/uploads/91de10d5d9aabcc59885c019782605d1"
   }
 ]

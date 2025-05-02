@@ -8,6 +8,8 @@ import storageService from "../services/storageService";
 import path from "path";
 import cors from "cors";
 
+import { sequelize } from "../models/db";
+
 const app = express();
 
 // serve that folder publicly
@@ -35,6 +37,10 @@ const startServer = async (): Promise<void> => {
   console.log("Initializing data storage...");
   await storageService.initializeDataFiles();
   console.log("Data storage initialized.");
+
+  console.log("Synchronizing SQL database...");
+  await sequelize.sync({ alter: true });
+  console.log("SQL database synchronized.");
 
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

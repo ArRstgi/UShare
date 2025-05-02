@@ -1,5 +1,7 @@
 import { BaseComponent } from "@/components/BaseComponent";
 
+const DB_VERSION = 1; // Bump this version to force upgrade and store creation
+
 export class Matching extends BaseComponent {
   #container: HTMLElement | null = null;
   #searchBar: HTMLInputElement | null = null;
@@ -22,7 +24,7 @@ export class Matching extends BaseComponent {
         })
         .then((profiles) => {
           // Open IndexedDB
-          const request = indexedDB.open("UShareDB", 1);
+          const request = indexedDB.open("UShareDB", DB_VERSION);
 
           request.onupgradeneeded = (event) => {
             const db = (event.target as IDBOpenDBRequest).result;
@@ -84,7 +86,7 @@ export class Matching extends BaseComponent {
 
   #loadSearchQuery(): Promise<string> {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open("UShareDB", 1);
+      const request = indexedDB.open("UShareDB", DB_VERSION);
       request.onsuccess = () => {
         const db = request.result;
         const tx = db.transaction("search", "readonly");
@@ -98,7 +100,7 @@ export class Matching extends BaseComponent {
   }
 
   #saveSearchQuery(query: string): void {
-    const request = indexedDB.open("UShareDB", 1);
+    const request = indexedDB.open("UShareDB", DB_VERSION);
     request.onsuccess = () => {
       const db = request.result;
       const tx = db.transaction("search", "readwrite");
@@ -115,7 +117,13 @@ export class Matching extends BaseComponent {
     this.#container = document.createElement("div");
     this.#container.classList.add("matching-page");
 
-    this.#setupContainerContent();
+    // Wait for IndexedDB initialization before setting up content
+    this.#initIndexedDB()
+      .then(() => this.#setupContainerContent())
+      .catch((err) => {
+        console.error("Failed to initialize IndexedDB:", err);
+        // Optionally show an error message in the UI
+      });
 
     return this.#container;
   }
@@ -229,6 +237,7 @@ export class Matching extends BaseComponent {
       card.appendChild(description);
       card.appendChild(buttons);
 
+      // Add event listener to the Match button
       matchButton.addEventListener("click", () => {
         if (matchButton.innerText === "Match") {
           // Call the API to match the card ID with user ID 1
@@ -379,6 +388,7 @@ export class Matching extends BaseComponent {
       }, 150); // 150ms debounce delay
     });
 
+
     // Add "Show Matches" button
     const showMatchesButton = document.createElement("button");
     showMatchesButton.innerText = "Show Matches";
@@ -465,7 +475,7 @@ export class Matching extends BaseComponent {
   // Helper method to fetch cards from IndexedDB
   async #getCardsFromDB(): Promise<{ cards: any[], matched: Set<number> }> {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open("UShareDB", 1);
+      const request = indexedDB.open("UShareDB", DB_VERSION);
 
       request.onsuccess = () => {
         const db = request.result;
@@ -504,7 +514,7 @@ export class Matching extends BaseComponent {
   // Add a helper method to update the matched list in IndexedDB
   #updateMatchedList(cardId: number, isMatched: boolean): Promise<void> {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open("UShareDB", 1);
+      const request = indexedDB.open("UShareDB", DB_VERSION);
 
       request.onsuccess = () => {
         const db = request.result;

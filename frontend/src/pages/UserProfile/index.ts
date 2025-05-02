@@ -8,7 +8,7 @@ interface ProfileDetails {
 
 export class UserProfilePage extends BaseComponent {
   #container: HTMLElement | null = null;
-  // TODO: replace this with real (per‑user) ID once we add authentication
+  // Replace this with real (per‑user) ID if we add authentication
   #profileId = "1";
 
   #profilePhotoUrl: string | null = null;
@@ -302,17 +302,17 @@ export class UserProfilePage extends BaseComponent {
     }
     const fd = new FormData();
     fd.append("photo", this.#selectedFile);
-
+  
     try {
       const res = await fetch(
         `http://localhost:3000/profile/${this.#profileId}/photo`,
         { method: "POST", body: fd }
       );
       if (!res.ok) throw new Error(`Status ${res.status}`);
-      const data = await res.json();
-      this.#profilePhotoUrl = data.photoUrl;
-      this.updatePhoto();
-      alert("Photo uploaded");
+      // we don’t even need the JSON here—just reload the profile
+      await this.loadProfile();
+  
+      alert("Photo uploaded!");
       this.clearUploadArea(area);
     } catch (err) {
       console.error("Upload failed:", err);
