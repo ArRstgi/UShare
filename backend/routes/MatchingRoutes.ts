@@ -1,15 +1,19 @@
 import { Router } from "express";
-import { getAllProfile, getAllMatch, match, unmatch } from "../controllers/matchingController";
+import {
+  getAllMatchingProfilesHandler,
+  getMatchesForUserHandler,
+  createMatchHandler,
+  removeMatchHandler,
+} from "../controllers/matchingController";
 
 const router = Router();
 
-// Route to get all profiles
-router.get("/getProfiles", getAllProfile);
+router.get("/getProfiles", getAllMatchingProfilesHandler);
 
-router.get("/getMatches/:id", getAllMatch);
+router.get("/getMatches/:id", getMatchesForUserHandler);
 
-router.post("/:currentId/match/:matchId", match);
+router.post("/:userId/match/:matchId", createMatchHandler);
 
-router.post("/:currentId/unmatch/:matchId", unmatch);
+router.post("/:userId/unmatch/:matchId", removeMatchHandler);
 
 export default router;
