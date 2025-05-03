@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional } from "sequelize";
-import { sequelize } from "./db"; // Import the shared sequelize instance
+import { sequelize } from "./db";
 
 interface MatchingProfileAttributes {
   id: number;
@@ -7,6 +7,7 @@ interface MatchingProfileAttributes {
   age?: number;
   matched?: number[];
   description?: string;
+  photoUrl?: string | null;
 }
 
 interface MatchingProfileCreationAttributes
@@ -21,7 +22,7 @@ export class MatchingProfile
   public age?: number;
   public matched?: number[];
   public description?: string;
-
+  public photoUrl?: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -49,6 +50,11 @@ MatchingProfile.init(
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
+    },
+    photoUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
     },
   },
   {
