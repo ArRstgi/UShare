@@ -1,113 +1,160 @@
-import fs from "fs";
-import path from "path";
+import { Model, DataTypes, Optional } from "sequelize";
+import { sequelize } from "./db";
 
-// Define the Profile type
-interface Profile {
+interface MatchingProfileAttributes {
   id: number;
   username?: string;
   age?: number;
   matched?: number[];
   description?: string;
+  photoUrl?: string | null;
 }
 
-const MATCHING_DATA_PATH = path.join(__dirname, "../data/globalProfiles.json");
+interface MatchingProfileCreationAttributes
+  extends Optional<MatchingProfileAttributes, "id"> {}
 
-let allProfiles: Profile[] = [];
+export class MatchingProfile
+  extends Model<MatchingProfileAttributes, MatchingProfileCreationAttributes>
+  implements MatchingProfileAttributes
+{
+  public id!: number;
+  public username?: string;
+  public age?: number;
+  public matched?: number[];
+  public description?: string;
+  public photoUrl?: string | null;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
 
-function loadAllData() {
-  try {
-    allProfiles = JSON.parse(fs.readFileSync(MATCHING_DATA_PATH, "utf-8"));
-  } catch {
-    console.error("Error loading data from file:", MATCHING_DATA_PATH);
-    allProfiles = [];
+MatchingProfile.init(
+  {
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    age: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: true,
+    },
+    matched: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    photoUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
+  },
+  {
+    tableName: "matching_profiles",
+    sequelize,
   }
+);
+
+export async function getProfileById(
+  id: number
+): Promise<MatchingProfile | null> {
+  return MatchingProfile.findByPk(id);
 }
 
-function saveAllData() {
-  fs.writeFileSync(MATCHING_DATA_PATH, JSON.stringify(allProfiles, null, 2));
+export async function getAllProfiles(): Promise<MatchingProfile[]> {
+  return MatchingProfile.findAll();
 }
 
-loadAllData();
-
-export function getProfileById(id: number): Profile | undefined {
-  return allProfiles.find((p) => p.id === id);
+export async function AddProfile(
+  data: Omit<MatchingProfileCreationAttributes, "id">
+): Promise<MatchingProfile> {
+  return MatchingProfile.create(data);
 }
 
-export function getAllProfiles(): Profile[] {
-    return allProfiles;
-}
+export async function createMatch(
+  currentId: number,
+  matchId: number
+): Promise<void> {
+  const currentProfile = await MatchingProfile.findByPk(currentId);
+  const matchProfile = await MatchingProfile.findByPk(matchId);
 
-export function AddProfile(data: Omit<Profile, "id">): Profile {
-  const newProfile: Profile = { id: Date.now(), ...data };
-  allProfiles.push(newProfile);
-  saveAllData();
-  return newProfile;
-}
-
-export function createMatch(currentId: number, matchId: number): void {
-  // Find the profile with currentId
-  const currentProfile = allProfiles.find((profile) => profile.id === currentId);
-  if (!currentProfile) {
-    console.error(`Profile with id ${currentId} not found.`);
+  if (!currentProfile || !matchProfile) {
+    console.error(
+      `One or both profiles not found: currentId=${currentId}, matchId=${matchId}`
+    );
     return;
   }
 
-  // Find the profile with matchId
-  const matchProfile = allProfiles.find((profile) => profile.id === matchId);
-  if (!matchProfile) {
-    console.error(`Profile with id ${matchId} not found.`);
+  const currentMatched = Array.isArray(currentProfile.matched)
+    ? [...currentProfile.matched]
+    : [];
+  const matchMatched = Array.isArray(matchProfile.matched)
+    ? [...matchProfile.matched]
+    : [];
+
+  if (!currentMatched.includes(matchId)) {
+    currentMatched.push(matchId);
+    currentProfile.matched = currentMatched;
+  }
+
+  if (!matchMatched.includes(currentId)) {
+    matchMatched.push(currentId);
+    matchProfile.matched = matchMatched;
+  }
+
+  await Promise.all([
+    currentProfile.changed() ? currentProfile.save() : Promise.resolve(),
+    matchProfile.changed() ? matchProfile.save() : Promise.resolve(),
+  ]);
+}
+
+export async function removeMatch(
+  currentId: number,
+  matchId: number
+): Promise<void> {
+  const currentProfile = await MatchingProfile.findByPk(currentId);
+  const matchProfile = await MatchingProfile.findByPk(matchId);
+
+  if (!currentProfile || !matchProfile) {
+    console.error(
+      `One or both profiles not found for removal: currentId=${currentId}, matchId=${matchId}`
+    );
     return;
   }
 
-  // Ensure the matched field exists and is an array
-  if (!Array.isArray(currentProfile.matched)) {
-    currentProfile.matched = [];
-  }
-  if (!Array.isArray(matchProfile.matched)) {
-    matchProfile.matched = [];
+  let currentChanged = false;
+  let matchChanged = false;
+
+  if (Array.isArray(currentProfile.matched)) {
+    const initialLength = currentProfile.matched.length;
+    currentProfile.matched = currentProfile.matched.filter(
+      (id) => id !== matchId
+    );
+    if (currentProfile.matched.length !== initialLength) {
+      currentChanged = true;
+    }
   }
 
-  // Add matchId to currentProfile's matched array if not already present
-  if (!currentProfile.matched.includes(matchId)) {
-    currentProfile.matched.push(matchId);
+  if (Array.isArray(matchProfile.matched)) {
+    const initialLength = matchProfile.matched.length;
+    matchProfile.matched = matchProfile.matched.filter(
+      (id) => id !== currentId
+    );
+    if (matchProfile.matched.length !== initialLength) {
+      matchChanged = true;
+    }
   }
 
-  // Add currentId to matchProfile's matched array if not already present
-  if (!matchProfile.matched.includes(currentId)) {
-    matchProfile.matched.push(currentId);
-  }
-  saveAllData();
+  await Promise.all([
+    currentChanged ? currentProfile.save() : Promise.resolve(),
+    matchChanged ? matchProfile.save() : Promise.resolve(),
+  ]);
 }
-
-export function removeMatch(currentId: number, matchId: number): void {
-    // Find the profile with currentId
-    const currentProfile = allProfiles.find((profile) => profile.id === currentId);
-    if (!currentProfile) {
-      console.error(`Profile with id ${currentId} not found.`);
-      return;
-    }
-  
-    // Find the profile with matchId
-    const matchProfile = allProfiles.find((profile) => profile.id === matchId);
-    if (!matchProfile) {
-      console.error(`Profile with id ${matchId} not found.`);
-      return;
-    }
-  
-    // Ensure the matched field exists and is an array
-    if (!Array.isArray(currentProfile.matched)) {
-      currentProfile.matched = [];
-    }
-    if (!Array.isArray(matchProfile.matched)) {
-      matchProfile.matched = [];
-    }
-  
-    if (currentProfile.matched.includes(matchId)) {
-      currentProfile.matched = currentProfile.matched.filter((id) => id !== matchId);
-    }
-  
-    if (matchProfile.matched.includes(currentId)) {
-      matchProfile.matched = matchProfile.matched.filter((id) => id !== currentId);
-    }
-    saveAllData();
-  }

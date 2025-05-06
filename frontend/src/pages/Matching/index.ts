@@ -195,6 +195,15 @@ export class Matching extends BaseComponent {
 
       const profilePic = document.createElement("div");
       profilePic.classList.add("profile-pic");
+      if (cardData.photoUrl) {
+          profilePic.style.backgroundImage = `url(${cardData.photoUrl})`;
+          profilePic.style.backgroundSize = "cover";
+          profilePic.style.backgroundColor = "";
+      } else {
+          profilePic.style.backgroundImage = `url("https://img.freepik.com/free-vector/isolated-young-handsome-man-different-poses-white-background-illustration_632498-859.jpg?semt=ais_hybrid")`;
+          profilePic.style.backgroundSize = "80px";
+          profilePic.style.backgroundColor = "#ccc";
+      }
 
       const username = document.createElement("h4");
       username.innerText = cardData.username;
@@ -300,9 +309,13 @@ export class Matching extends BaseComponent {
         detailedUsername.innerText = cardData.username;
     
         const detailedImage = document.createElement("img");
-        detailedImage.src = cardData.image;
-        detailedImage.alt = cardData.description;
+        // Use photoUrl for the expanded view image
+        detailedImage.src = cardData.photoUrl || 'src/assets/placeholder.jpg'; // Use photoUrl or placeholder
+        detailedImage.alt = cardData.description || cardData.username; // Better alt text
         detailedImage.style.width = "100%";
+        detailedImage.style.maxWidth = "300px"; // Optional: constrain size
+        detailedImage.style.height = "auto";
+        detailedImage.style.borderRadius = "8px"; // Optional: style it
     
         const detailedDescription = document.createElement("p");
         detailedDescription.innerText = cardData.description;
@@ -330,6 +343,24 @@ export class Matching extends BaseComponent {
           existingCard.querySelector("h4")!.textContent = cardData.username;
           existingCard.querySelector(".description")!.textContent = cardData.description;
           (existingCard.querySelector("img") as HTMLImageElement).src = cardData.image;
+
+          // Update profile pic background
+          const existingPic = existingCard.querySelector(".profile-pic") as HTMLElement;
+          if (cardData.photoUrl) {
+              existingPic.style.backgroundImage = `url(${cardData.photoUrl})`;
+              existingPic.style.backgroundSize = "cover";
+              existingPic.style.backgroundColor = "";
+          } else {
+              existingPic.style.backgroundImage = `url("https://img.freepik.com/free-vector/isolated-young-handsome-man-different-poses-white-background-illustration_632498-859.jpg?semt=ais_hybrid")`;
+              existingPic.style.backgroundSize = "80px";
+              existingPic.style.backgroundColor = "#ccc";
+          }
+
+          // Update main image src
+          const existingImage = existingCard.querySelector("img") as HTMLImageElement;
+          existingImage.src = cardData.image || "src/assets/swimmer.jpg"; // Adjust as needed
+          // Or if using photoUrl: existingImage.src = cardData.photoUrl || 'src/assets/placeholder.jpg';
+
         } else {
           // Add new card
           cardContainer.appendChild(createCardElement(cardData, matched));

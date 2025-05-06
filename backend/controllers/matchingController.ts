@@ -1,85 +1,108 @@
 import { Request, Response } from "express";
 import {
+  getAllProfiles,
+  getProfileById,
   createMatch,
   removeMatch,
-  getAllProfiles,
-  getProfileById
+  MatchingProfile,
 } from "../models/matchingPageModel";
+import { Op } from "sequelize";
 
-
-export function getAllProfile(req: Request, res: Response): void {
-  const profiles = getAllProfiles();
-  if (!profiles) {
-    res.status(404).json({ error: "Unable to load Profiles" });
-    return;
+export async function getAllMatchingProfilesHandler(
+  _req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const profiles = await getAllProfiles();
+    res.json(profiles);
+  } catch (error) {
+    console.error("Error fetching all matching profiles:", error);
+    res.status(500).json({ error: "Failed to retrieve matching profiles" });
   }
-  res.json(profiles);
 }
 
-export function getAllMatch(req: Request, res: Response): void {
-  const { id } = req.params;
-  const profile = getProfileById(parseInt(id, 10));
-  if (!profile) {
-    res.status(404).json({ error: "Unable to load Matches" });
-    return;
-  }
-  res.json(profile.matched?.map((matchId => getProfileById(matchId)?.username)) || []);
-}
+export async function getMatchesForUserHandler(
+  req: Request<{ id: string }>,
+  res: Response
+): Promise<void> {
+  try {
+    const userId = parseInt(req.params.id, 10);
 
-export function match(req: Request, res: Response): void {
-  const { currentId, matchId } = req.params;
-
-  // Validate input
-  if (!currentId || !matchId) {
-    res.status(400).json({ error: "both ID is required" });
-    return;
-  }
-
-  // Retrieve the initiating user's profile
-  const userProfile1 = getProfileById(parseInt(currentId, 10));
-  if (userProfile1 === null) {
-    res.status(404).json({ error: "user profile not found" });
-    return;
-  }
-
-  const userProfile2 = getProfileById(parseInt(matchId, 10));
-  if (userProfile2 === null) {
-      res.status(404).json({ error: "match profile not found" });
+    if (isNaN(userId)) {
+      res.status(400).json({ error: "Invalid user ID" });
       return;
+    }
+
+    const profile = await getProfileById(userId);
+
+    if (!profile) {
+      res.status(404).json({ error: "Profile not found" });
+      return;
+    }
+
+    const matchedIds = profile.matched;
+
+    if (!matchedIds || matchedIds.length === 0) {
+      res.json([]);
+      return;
+    }
+
+    const matchedProfiles = await MatchingProfile.findAll({
+      where: {
+        id: {
+          [Op.in]: matchedIds,
+        },
+      },
+      attributes: ["username"],
+    });
+
+    const matchedUsernames = matchedProfiles.map((p) => p.username).filter(Boolean); 
+
+    res.json(matchedUsernames);
+  } catch (error) {
+    console.error(`Error fetching matches for user ${req.params.id}:`, error);
+    res.status(500).json({ error: "Failed to retrieve matches" });
   }
-
-  createMatch(parseInt(currentId, 10), parseInt(matchId, 10));
-
-  res.status(200).json({
-    message: "Match created successfully"
-  });
 }
 
-export function unmatch(req: Request, res: Response): void {
-  const { currentId, matchId } = req.params;
+export async function createMatchHandler(
+  req: Request<{ userId: string; matchId: string }>,
+  res: Response
+): Promise<void> {
+  try {
+    const currentId = parseInt(req.params.userId, 10);
+    const matchId = parseInt(req.params.matchId, 10);
 
-  // Validate input
-  if (!currentId || !matchId) {
-    res.status(400).json({ error: "both ID is required" });
-    return;
+    if (isNaN(currentId) || isNaN(matchId)) {
+      res.status(400).json({ error: "Invalid user ID or match ID" });
+      return;
+    }
+
+    await createMatch(currentId, matchId);
+    res.status(200).json({ message: "Match created successfully"});
+  } catch (error) {
+    console.error("Error creating match:", error);
+    res.status(500).json({ error: "Failed to create match" });
   }
+}
 
-  // Retrieve the initiating user's profile
-  const userProfile1 = getProfileById(parseInt(currentId, 10));
-  if (userProfile1 === null) {
-    res.status(404).json({ error: "user profile not found" });
-    return;
+export async function removeMatchHandler(
+  req: Request<{ userId: string; matchId: string }>,
+  res: Response
+): Promise<void> {
+  try {
+    const currentId = parseInt(req.params.userId, 10);
+    const matchId = parseInt(req.params.matchId, 10);
+
+    if (isNaN(currentId) || isNaN(matchId)) {
+      res.status(400).json({ error: "Invalid user ID or match ID" });
+      return;
+    }
+
+    await removeMatch(currentId, matchId);
+    res.status(200).json({ message: "Match removed successfully" });
+  } catch (error) {
+    console.error("Error removing match:", error);
+    res.status(500).json({ error: "Failed to remove match" });
   }
-
-  const userProfile2 = getProfileById(parseInt(matchId, 10));
-  if (userProfile2 === null) {
-    res.status(404).json({ error: "match profile not found" });
-    return;
-  }
-
-  removeMatch(parseInt(currentId, 10), parseInt(matchId, 10));
-
-  res.status(200).json({
-    message: "unmatch successfully"
-  });
 }
