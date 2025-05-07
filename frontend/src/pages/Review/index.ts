@@ -14,7 +14,7 @@ export class ReviewPage extends BaseComponent {
     reviews.id = "reviewsContainer";
 
     try {
-      const response = await fetch("reviews");
+      const response = await fetch("http://localhost:3000/reviews");
       if (!response.ok) throw new Error(`Failed to fetch reviews: ${response.statusText}`);
       const reviewsData = await response.json();
 
@@ -140,7 +140,7 @@ export class ReviewPage extends BaseComponent {
       };
 
       try {
-        const response = await fetch("reviews", {
+        const response = await fetch("http://localhost:3000/reviews", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(reviewData),
@@ -159,7 +159,7 @@ export class ReviewPage extends BaseComponent {
 
   async #deleteReview(reviewCard: HTMLElement, teacherName: string, reviewText: string) {
     try {
-      const response = await fetch(`/reviews/${teacherName}`, {
+      const response = await fetch(`http://localhost:3000/reviews/${teacherName}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reviewText }),

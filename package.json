@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "fs-extra": "^11.3.0",
     "sequelize": "^6.37.7",
     "sqlite3": "^5.1.7"
   }
