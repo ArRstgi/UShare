@@ -6,6 +6,7 @@ import {
   removeMatch,
   MatchingProfile,
 } from "../models/matchingPageModel";
+import userModel from "../models/userModel";
 import { Op } from "sequelize";
 
 export async function getAllMatchingProfilesHandler(
@@ -56,7 +57,9 @@ export async function getMatchesForUserHandler(
       attributes: ["username"],
     });
 
-    const matchedUsernames = matchedProfiles.map((p) => p.username).filter(Boolean); 
+    const matchedUsernames = matchedProfiles
+      .map((p) => p.username)
+      .filter(Boolean);
 
     res.json(matchedUsernames);
   } catch (error) {
@@ -79,7 +82,38 @@ export async function createMatchHandler(
     }
 
     await createMatch(currentId, matchId);
-    res.status(200).json({ message: "Match created successfully"});
+
+    const currentProfile = await getProfileById(currentId);
+    const targetProfile = await getProfileById(matchId);
+
+    // Ensure current user (from matching profile) exists in chat users
+    if (!currentProfile || !currentProfile.username) {
+      console.warn(
+        `MatchingProfile ${currentId} has no username, cannot add to chat.`
+      );
+    } else {
+      // Use findOrCreateUser from userModel (chat user model)
+      await userModel.findOrCreateUser(currentProfile.username, {
+        availability: "online",
+      });
+    }
+
+    // Ensure target user (from matching profile) exists in chat users
+    if (!targetProfile || !targetProfile.username) {
+      console.warn(
+        `MatchingProfile ${matchId} has no username, cannot add to chat.`
+      );
+    } else {
+      await userModel.findOrCreateUser(targetProfile.username, {
+        availability: "online",
+      });
+    }
+
+    res
+      .status(200)
+      .json({
+        message: "Match created successfully and users prepared for chat.",
+      });
   } catch (error) {
     console.error("Error creating match:", error);
     res.status(500).json({ error: "Failed to create match" });

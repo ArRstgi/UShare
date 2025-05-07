@@ -7,6 +7,9 @@ import { ApiService } from "@/services/api-service";
 /**
  * Controller for the Chat Page, managing state, DB, and DOM directly.
  */
+
+const CURRENT_USER_CHAT_NAME = "SwimPro";
+
 export class ChatPage extends BaseComponent {
   // Main container
   #container: HTMLElement | null = null;
@@ -129,7 +132,17 @@ export class ChatPage extends BaseComponent {
       this.#handleDragLeave
     );
     this.#conversationView?.addEventListener("drop", this.#handleDrop);
+    window.addEventListener("chat:userMatched", this.#handleUserMatchedEvent);
   }
+
+  #handleUserMatchedEvent = () => {
+    console.log(
+      "ChatPage: Heard chat:userMatched event, refreshing user list."
+    );
+    this.#renderUserList(this.#searchInput?.value ?? "").catch((err) =>
+      console.error("Failed to refresh user list after match:", err)
+    );
+  };
 
   /** Coordinates async setup */
   async #initializePage() {
@@ -152,7 +165,9 @@ export class ChatPage extends BaseComponent {
 
     try {
       // Fetch users - they now have lastMessageTimestamp/Text stored on them
-      const users = await ApiService.getUsers();
+      let users = await ApiService.getUsers();
+
+      users = users.filter((user) => user.name !== CURRENT_USER_CHAT_NAME);
 
       // Sort directly using the stored timestamp
       users.sort(
@@ -233,7 +248,8 @@ export class ChatPage extends BaseComponent {
   /** Loads the first conversation or placeholder */
   async #loadInitialConversation() {
     try {
-      const users = await ApiService.getUsers();
+      let users = await ApiService.getUsers();
+      users = users.filter((user) => user.name !== CURRENT_USER_CHAT_NAME);
       if (users.length > 0) {
         await this.#handleUserSelected(users[0]); // Select the first user
       } else {
@@ -319,7 +335,10 @@ export class ChatPage extends BaseComponent {
     this.#updateActiveUserHighlight();
     this.#updateConversationHeader(selectedUser.name);
     // Pass "You" (current frontend user) and selected user's name
-    await this.#renderConversationMessages("You", selectedUser.name);
+    await this.#renderConversationMessages(
+      CURRENT_USER_CHAT_NAME,
+      selectedUser.name
+    );
   };
 
   /** Handles sending a text message */
@@ -331,7 +350,7 @@ export class ChatPage extends BaseComponent {
 
     try {
       const newMessageFromApi = await ApiService.sendMessage(
-        "You",
+        CURRENT_USER_CHAT_NAME,
         receiverName,
         text
       );
@@ -358,7 +377,7 @@ export class ChatPage extends BaseComponent {
 
     try {
       const newMessageFromApi = await ApiService.sendMessage(
-        "You",
+        CURRENT_USER_CHAT_NAME,
         receiverName,
         undefined, // No text content
         file
@@ -414,7 +433,7 @@ export class ChatPage extends BaseComponent {
     const messageDiv = document.createElement("div");
     messageDiv.classList.add(
       "message",
-      message.sender === "You" ? "sent" : "received"
+      message.sender === CURRENT_USER_CHAT_NAME ? "sent" : "received"
     );
 
     // File display: Use backend fields

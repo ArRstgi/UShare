@@ -1,7 +1,9 @@
+// backend/controllers/messageController.ts
 import { Request, Response, NextFunction } from "express";
 import path from "path";
-import messageModel from "../models/messageModel";
+import messageModel from "../models/messageModel"; // This now uses Sequelize
 import { Message } from "../types/chatTypes";
+import { UPLOADS_DIR } from "../middleware/uploadMiddleware"; // Import UPLOADS_DIR
 
 // Define expected Request param/query types
 interface MessageParams {
@@ -11,12 +13,10 @@ interface MessageQuery {
   user1: string;
   user2: string;
 }
-// Define expected request body structure (adjust based on what frontend sends)
 interface MessagePostBody {
   sender: string;
   receiver: string;
   text?: string;
-  // file is handled by multer (req.file)
 }
 
 export const getMessages = async (
@@ -32,6 +32,7 @@ export const getMessages = async (
     return;
   }
   try {
+    // messageModel.getMessagesBetweenUsers returns MessageType[] directly
     const messages: Message[] = await messageModel.getMessagesBetweenUsers(
       user1,
       user2
@@ -42,22 +43,19 @@ export const getMessages = async (
   }
 };
 
-// Use Partial<MessagePostBody> if some fields are optional in the body
 export const createMessage = async (
   req: Request<{}, {}, MessagePostBody>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  // Type assertion for safety, or use a validation library
-  const messageData = req.body; // Body parsed by express.json/urlencoded OR multer for text fields
-  const fileInfo = req.file as Express.Multer.File | undefined; // Get file info from multer
+  const messageData = req.body;
+  const fileInfo = req.file as Express.Multer.File | undefined;
 
   if (!messageData.sender || !messageData.receiver) {
     res.status(400).json({ message: "Sender and Receiver are required." });
     return;
   }
-  // Ensure text is at least empty string if not provided but needed (or handle null in model)
-  const text = messageData.text ?? null;
+  const text = messageData.text ?? null; // Ensure text is null if not provided
 
   if (!text && !fileInfo) {
     res.status(400).json({ message: "Message must contain text or a file." });
@@ -65,13 +63,13 @@ export const createMessage = async (
   }
 
   try {
+    // messageModel.addMessage returns MessageType directly
     const newMessage: Message = await messageModel.addMessage(
       { sender: messageData.sender, receiver: messageData.receiver, text },
       fileInfo
     );
     res.status(201).json(newMessage);
   } catch (error) {
-    // Error handling (including potential file cleanup) is now within the model
     next(error);
   }
 };
@@ -83,7 +81,7 @@ export const downloadMessageFile = async (
 ): Promise<void> => {
   const { id } = req.params;
   try {
-    const message = await messageModel.getMessageById(id);
+    const message = await messageModel.getMessageById(id); // Returns MessageType or null
     if (!message || !message.filePath) {
       res
         .status(404)
@@ -91,20 +89,30 @@ export const downloadMessageFile = async (
       return;
     }
 
-    // Construct absolute path from backend root (where server.ts runs)
-    // message.filePath is like 'uploads/xyz.pdf'
-    const absoluteFilePath = path.resolve(__dirname, "..", message.filePath); // Go up from controllers -> backend root
+    // message.filePath is relative, e.g., 'uploads/xyz.pdf'
+    // We need the basename of the file and join it with UPLOADS_DIR (absolute path to uploads folder)
+    const fileNameInUploads = path.basename(message.filePath);
+    const absoluteFilePath = path.join(UPLOADS_DIR, fileNameInUploads);
 
-    res.download(absoluteFilePath, message.fileName || "download", (err) => {
-      if (err) {
-        console.error(`Download error for file: ${absoluteFilePath}`, err);
-        if (!res.headersSent) {
-          res
-            .status(500)
-            .send("Could not download file due to a server error.");
+    res.download(
+      absoluteFilePath,
+      message.fileName || fileNameInUploads,
+      (err) => {
+        if (err) {
+          console.error(`Download error for file: ${absoluteFilePath}`, err);
+          if (!res.headersSent) {
+            // Check if headers already sent to avoid "Can't set headers after they are sent."
+            if ((err as any).code === "ENOENT") {
+              res.status(404).send("File not found on server.");
+            } else {
+              res
+                .status(500)
+                .send("Could not download file due to a server error.");
+            }
+          }
         }
       }
-    });
+    );
   } catch (error) {
     next(error);
   }
@@ -119,10 +127,12 @@ export const deleteMessageById = async (
   try {
     const result = await messageModel.deleteMessage(id);
     if (!result.found) {
-      res.status(404).json({ message: `Message with id '${id}' not found` });
+      res.status(404).json({
+        message: result.message || `Message with id '${id}' not found`,
+      });
       return;
     }
-    res.status(204).send(); // No Content on successful delete
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

@@ -1,25 +1,25 @@
+// backend/controllers/userController.ts
 import { Request, Response, NextFunction } from "express";
 import userModel from "../models/userModel";
-import { User } from "../types/chatTypes"; // Import User type
+import { User } from "../types/chatTypes"; // Import User type for response consistency
 
-// Define expected Request param types for clarity
 interface UserParams {
   name: string;
 }
 
-// Define expected Request body type for update
-type UserUpdateBody = Partial<User>;
+type UserUpdateBody = Partial<User>; // Frontend sends partial User data
 
 export const getAllUsers = async (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
+    // userModel.getAllUsers returns User[] directly matching the type
     const users = await userModel.getAllUsers();
     res.status(200).json(users);
   } catch (error) {
-    next(error); // Pass error to the central handler
+    next(error);
   }
 };
 
@@ -36,10 +36,13 @@ export const updateUserByName = async (
     return;
   }
   try {
+    // userModel.updateUser returns the updated User object or null
     const updatedUser = await userModel.updateUser(name, updateData);
     if (!updatedUser) {
-      res.status(404).json({ message: `User '${name}' not found` });
-      return; // Added return
+      res
+        .status(404)
+        .json({ message: `User '${name}' not found or no changes made` });
+      return;
     }
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -54,10 +57,11 @@ export const getUserByName = async (
 ): Promise<void> => {
   const { name } = req.params;
   try {
+    // userModel.getUserByName returns User or null
     const user = await userModel.getUserByName(name);
     if (!user) {
       res.status(404).json({ message: `User '${name}' not found` });
-      return; // Added return
+      return;
     }
     res.status(200).json(user);
   } catch (error) {
