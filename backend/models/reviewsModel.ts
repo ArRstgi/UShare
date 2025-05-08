@@ -1,7 +1,8 @@
-import fs from "fs";
-import path from "path";
+import { Model, DataTypes, Optional } from "sequelize";
+import { sequelize } from "./db"; // Assuming you have a db.ts setup
 
-export interface Review {
+export interface ReviewAttributes {
+  id: number;
   stars: number;
   teacherName: string;
   skill: string;
@@ -10,44 +11,86 @@ export interface Review {
   reviewText: string;
 }
 
-const DATA_PATH = path.join(__dirname, "../data/reviews.json");
+interface ReviewCreationAttributes 
+  extends Optional<ReviewAttributes, "id"> {}
 
-let reviews: Review[] = [];
+export class Review 
+  extends Model<ReviewAttributes, ReviewCreationAttributes>
+  implements ReviewAttributes {
+  
+  public id!: number;
+  public stars!: number;
+  public teacherName!: string;
+  public skill!: string;
+  public reviewerName!: string;
+  public date!: string;
+  public reviewText!: string;
 
-// Load reviews from disk
-function loadFromDisk() {
-  try {
-    reviews = JSON.parse(fs.readFileSync(DATA_PATH, "utf-8"));
-  } catch {
-    reviews = [];
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+Review.init(
+  {
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    stars: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 1,
+        max: 5
+      }
+    },
+    teacherName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    skill: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    reviewerName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false
+    },
+    reviewText: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    }
+  },
+  {
+    tableName: "reviews",
+    sequelize,
+    timestamps: true // Adds createdAt and updatedAt automatically
   }
+);
+
+
+export async function getAllReviews(): Promise<Review[]> {
+  return Review.findAll();
 }
 
-// Save reviews to disk
-function saveToDisk() {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(reviews, null, 2));
+export async function addReview(newReview: Omit<ReviewAttributes, "id">): Promise<Review> {
+  return Review.create(newReview);
 }
 
-// Initialize by loading data from disk
-loadFromDisk();
-
-export function getAllReviews(): Review[] {
-  return reviews;
-}
-
-export function addReview(newReview: Review): Review {
-  reviews.push(newReview);
-  saveToDisk();
-  return newReview;
-}
-
-export function deleteReview(teacherName: string, reviewText: string): boolean {
-  const initialLength = reviews.length;
-  reviews = reviews.filter(
-    (review) =>
-      review.teacherName !== teacherName || review.reviewText !== reviewText
-  );
-  const wasDeleted = reviews.length < initialLength;
-  if (wasDeleted) saveToDisk();
-  return wasDeleted;
+export async function deleteReview(
+  teacherName: string, 
+  reviewText: string
+): Promise<boolean> {
+  const result = await Review.destroy({
+    where: {
+      teacherName,
+      reviewText
+    }
+  });
+  return result > 0;
 }
