@@ -4,7 +4,9 @@ import profileRoutes from "../routes/profileRoutes";
 import matchingRoutes from "../routes/MatchingRoutes";
 import userRoutes from "../routes/userRoutes";
 import messageRoutes from "../routes/messageRoutes";
-import storageService from "../services/storageService";
+import "../models/matchingPageModel";
+import "../models/chatUser";
+import "../models/chatMessage";
 import path from "path";
 import cors from "cors";
 
@@ -29,14 +31,12 @@ app.use("/reviews", reviewsRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
 
-app.use("/api/users", userRoutes);
-app.use("/api/messages", messageRoutes);
-
 const PORT = process.env.PORT || 3000;
 const startServer = async (): Promise<void> => {
-  console.log("Initializing data storage...");
-  await storageService.initializeDataFiles();
-  console.log("Data storage initialized.");
+  console.log("Connecting to SQL database and synchronizing models...");
+  // Test connection
+  await sequelize.authenticate();
+  console.log("Connection has been established successfully.");
 
   console.log("Synchronizing SQL database...");
   await sequelize.sync({ alter: true });

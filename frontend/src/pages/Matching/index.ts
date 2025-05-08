@@ -268,6 +268,9 @@ export class Matching extends BaseComponent {
               this.#updateMatchedList(cardData.id, true)
                 .then(() => console.log("Matched list updated in IndexedDB."))
                 .catch((err) => console.error("Error updating matched list:", err));
+
+              console.log("Match successful, dispatching chat:userMatched event.");
+              window.dispatchEvent(new CustomEvent('chat:userMatched'));
             })
             .catch((err) => {
               console.error("Error matching:", err);
